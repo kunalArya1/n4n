@@ -1,8 +1,10 @@
 import Image from "next/image";
+import Link from "next/link";
 import { UserButton } from "@clerk/nextjs";
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import WorkspaceGrid from "@/components/dashboard/Workspace";
+import { Greeting } from "@/components/dashboard/Greeting";
 
 export const dynamic = "force-dynamic";
 
@@ -57,14 +59,12 @@ export default async function DashboardPage() {
     <div className="bg-background min-h-screen">
       <header className="border-border/40 bg-background/80 sticky top-0 z-50 border-b backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
-          <div className="flex items-center gap-3">
+          <Link href="/" className="flex items-center gap-3">
             <Image src="/logo.svg" alt="Logo" width={32} height={32} />
             {/* <h1 className="text-lg font-semibold tracking-tight">n4n</h1> */}
-          </div>
-          <div className="flex items-center gap-5">
-            <span className="text-sm text-white">
-              Welcome, <span className="font-semibold">{user.firstName || "User"}</span>
-            </span>
+          </Link>
+          <div className="flex items-center gap-4">
+            <Greeting name={user.firstName || "User"} />
             <UserButton afterSignOutUrl="/" />
           </div>
         </div>

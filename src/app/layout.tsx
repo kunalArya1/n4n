@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { dark } from "@clerk/themes";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -29,12 +31,16 @@ export default function RootLayout({
       signUpUrl="/sign-up"
       afterSignInUrl="/dashboard"
       afterSignUpUrl="/dashboard"
+      appearance={{
+        baseTheme: dark,
+        variables: {
+          borderRadius: "2px",
+        },
+      }}
     >
-      <html lang="en">
-        <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        >
-          {children}
+      <html lang="en" className="dark">
+        <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+          <TooltipProvider>{children}</TooltipProvider>
         </body>
       </html>
     </ClerkProvider>

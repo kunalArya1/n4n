@@ -1,27 +1,40 @@
-import { SignInButton, SignUpButton } from "@clerk/nextjs";
+import { SignInButton, SignUpButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+import { currentUser } from "@clerk/nextjs/server";
 import Image from "next/image";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
-export default function Home() {
+export default async function Home() {
+  const user = await currentUser();
   return (
     <div className="bg-background flex min-h-screen flex-col">
       {/* Header */}
       <header className="border-border/40 border-b backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
-          <div className="flex items-center gap-3">
+          <Link href="/" className="flex items-center gap-3">
             <Image src="/logo.svg" alt="Logo" width={32} height={32} />
             {/* <span className="text-lg font-semibold tracking-tight">n4n</span> */}
-          </div>
-          <div className="flex items-center gap-3">
-            <SignInButton mode="modal">
-              <Button variant="ghost" size="sm">
-                Sign In
-              </Button>
-            </SignInButton>
-            <SignUpButton mode="modal">
-              <Button size="sm">Get Started</Button>
-            </SignUpButton>
-          </div>
+          </Link>
+          <SignedOut>
+            <div className="flex items-center gap-3">
+              <SignInButton mode="modal">
+                <Button variant="ghost" size="sm">
+                  Sign In
+                </Button>
+              </SignInButton>
+              <SignUpButton mode="modal">
+                <Button size="sm">Get Started</Button>
+              </SignUpButton>
+            </div>
+          </SignedOut>
+          <SignedIn>
+            <div className="flex items-center gap-3">
+              <span className="text-muted-foreground text-sm">
+                Welcome back, <span className="font-semibold">{user?.firstName || "User"}</span>
+              </span>
+              <UserButton afterSignOutUrl="/" />
+            </div>
+          </SignedIn>
         </div>
       </header>
 
@@ -42,18 +55,29 @@ export default function Home() {
             Build, connect, and automate workflows visually. No code required. Powerful enough for
             developers, simple enough for everyone.
           </p>
-          <div className="flex items-center justify-center gap-4">
-            <SignUpButton mode="modal">
-              <Button size="lg" className="px-8">
-                Start Building
-              </Button>
-            </SignUpButton>
-            <SignInButton mode="modal">
-              <Button variant="outline" size="lg" className="px-8">
-                Sign In
-              </Button>
-            </SignInButton>
-          </div>
+          <SignedOut>
+            <div className="flex items-center justify-center gap-4">
+              <SignUpButton mode="modal">
+                <Button size="lg" className="px-8">
+                  Start Building
+                </Button>
+              </SignUpButton>
+              <SignInButton mode="modal">
+                <Button variant="outline" size="lg" className="px-8">
+                  Sign In
+                </Button>
+              </SignInButton>
+            </div>
+          </SignedOut>
+          <SignedIn>
+            <div className="flex items-center justify-center gap-4">
+              <Link href="/dashboard">
+                <Button size="lg" className="px-8">
+                  Go to Dashboard
+                </Button>
+              </Link>
+            </div>
+          </SignedIn>
         </div>
       </main>
 

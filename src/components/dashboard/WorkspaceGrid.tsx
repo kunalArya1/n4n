@@ -32,6 +32,8 @@ interface WorkspaceGridProps {
   onCreated: (ws: Workspace) => void;
   onRenamed: (ws: Workspace) => void;
   onDeleted: (id: string) => void;
+  selectedIds: Set<string>;
+  onSelectionChange: (ids: Set<string>) => void;
 }
 
 export default function WorkspaceGrid({
@@ -41,10 +43,12 @@ export default function WorkspaceGrid({
   onCreated,
   onRenamed,
   onDeleted,
+  selectedIds,
+  onSelectionChange,
 }: WorkspaceGridProps) {
   const router = useRouter();
+
   const [renameOpen, setRenameOpen] = useState(false);
-  const [deleteOpen, setDeleteOpen] = useState(false);
   const [newName, setNewName] = useState("");
   const [newDescription, setNewDescription] = useState("");
   const [selectedWs, setSelectedWs] = useState<Workspace | null>(null);
@@ -75,14 +79,19 @@ export default function WorkspaceGrid({
     setNewName("");
   }
 
-  function handleSoftDelete() {
-    if (!selectedWs) return;
-    onDeleted(selectedWs.id);
-    setDeleteOpen(false);
+  function toggleSelect(id: string, e: React.MouseEvent) {
+    e.stopPropagation();
+    const next = new Set(selectedIds);
+    if (next.has(id)) {
+      next.delete(id);
+    } else {
+      next.add(id);
+    }
+    onSelectionChange(next);
   }
 
   return (
-    <>
+    <div className="relative min-h-[500px]" onClick={() => onSelectionChange(new Set())}>
       {workspaces.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <div className="bg-muted mb-4 rounded p-4">
@@ -95,75 +104,78 @@ export default function WorkspaceGrid({
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {workspaces.map((ws) => (
-            <Card
-              key={ws.id}
-              className="group hover:shadow-primary/5 hover:border-primary/30 cursor-pointer transition-all hover:shadow-lg"
-              onClick={() => router.push(`/workspace/${ws.id}`)}
-            >
-              <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
-                <div className="flex min-w-0 flex-1 items-center gap-3">
-                  <div className="shrink-0 rounded bg-linear-to-br from-violet-500/10 to-indigo-500/10 p-2">
-                    <HiOutlineFolder className="h-5 w-5 text-violet-600 dark:text-violet-400" />
+          {workspaces.map((ws) => {
+            const isSelected = selectedIds.has(ws.id);
+            return (
+              <Card
+                key={ws.id}
+                className={`group hover:shadow-primary/5 hover:border-primary/30 relative cursor-pointer transition-all hover:shadow-lg ${
+                  isSelected ? "border-primary/50 bg-primary/5 shadow-primary/10 shadow-md ring-1 ring-primary" : ""
+                }`}
+                onClick={(e) => toggleSelect(ws.id, e)}
+                onDoubleClick={() => router.push(`/workspace/${ws.id}`)}
+              >
+                <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
+                  <div className="flex min-w-0 flex-1 items-center gap-3">
+                    <div className="shrink-0 rounded bg-linear-to-br from-violet-500/10 to-indigo-500/10 p-2">
+                      <HiOutlineFolder className="h-5 w-5 text-violet-600 dark:text-violet-400" />
+                    </div>
+                    <div className="min-w-0">
+                      <CardTitle className="truncate text-sm leading-tight font-semibold">
+                        {ws.name}
+                      </CardTitle>
+                      <CardDescription className="mt-0.5 text-xs">
+                        {ws._count.workflows} workflow{ws._count.workflows !== 1 ? "s" : ""}
+                      </CardDescription>
+                    </div>
                   </div>
-                  <div className="min-w-0">
-                    <CardTitle className="truncate text-sm leading-tight font-semibold">
-                      {ws.name}
-                    </CardTitle>
-                    <CardDescription className="mt-0.5 text-xs">
-                      {ws._count.workflows} workflow{ws._count.workflows !== 1 ? "s" : ""}
-                    </CardDescription>
-                  </div>
-                </div>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100"
-                    >
-                      <BsThreeDotsVertical className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                    <DropdownMenuItem
-                      onClick={() => {
-                        setSelectedWs(ws);
-                        setNewName(ws.name);
-                        setRenameOpen(true);
-                      }}
-                    >
-                      <MdEdit className="mr-2 h-4 w-4" />
-                      Rename
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className="text-destructive focus:text-destructive"
-                      onClick={() => {
-                        setSelectedWs(ws);
-                        setDeleteOpen(true);
-                      }}
-                    >
-                      <MdDeleteOutline className="mr-2 h-4 w-4" />
-                      Move to Trash
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <p className="text-muted-foreground mb-1 truncate text-xs">
-                  {ws.description || "No description"}
-                </p>
-                <p className="text-muted-foreground truncate text-[11px]" suppressHydrationWarning>
-                  Last updated{" "}
-                  {new Date(ws.updatedAt).toLocaleDateString("en-GB", {
-                    day: "2-digit",
-                    month: "long",
-                    year: "numeric",
-                  })}
-                </p>
-              </CardContent>
-            </Card>
-          ))}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100"
+                      >
+                        <BsThreeDotsVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                      <DropdownMenuItem
+                        onClick={() => {
+                          setSelectedWs(ws);
+                          setNewName(ws.name);
+                          setRenameOpen(true);
+                        }}
+                      >
+                        <MdEdit className="mr-2 h-4 w-4" />
+                        Rename
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className="text-destructive focus:text-destructive"
+                        onClick={() => onDeleted(ws.id)}
+                      >
+                        <MdDeleteOutline className="mr-2 h-4 w-4" />
+                        Move to Trash
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <p className="text-muted-foreground mb-1 truncate text-xs">
+                    {ws.description || "No description"}
+                  </p>
+                  <p className="text-muted-foreground truncate text-[11px]" suppressHydrationWarning>
+                    Last updated{" "}
+                    {new Date(ws.updatedAt).toLocaleDateString("en-GB", {
+                      day: "2-digit",
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </p>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       )}
 
@@ -245,27 +257,6 @@ export default function WorkspaceGrid({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {/* Soft Delete Dialog */}
-      <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Move to Trash</DialogTitle>
-          </DialogHeader>
-          <p className="text-muted-foreground text-sm">
-            Are you sure you want to move <strong>{selectedWs?.name}</strong> to trash? You can
-            restore it later from the trash.
-          </p>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteOpen(false)}>
-              Cancel
-            </Button>
-            <Button variant="destructive" onClick={handleSoftDelete}>
-              Move to Trash
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </>
+    </div>
   );
 }

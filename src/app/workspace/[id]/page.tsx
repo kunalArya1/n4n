@@ -9,7 +9,6 @@ import { HiOutlineChevronRight } from "react-icons/hi2";
 
 export const dynamic = "force-dynamic";
 
-// Dummy workspace data lookup – will be replaced with real DB queries later
 const DUMMY_WORKSPACES: Record<
   string,
   { name: string; description: string; workflows: Parameters<typeof WorkflowContainer>[0]["initialWorkflows"] }

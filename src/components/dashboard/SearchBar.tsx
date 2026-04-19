@@ -30,28 +30,14 @@ interface SearchBarProps {
   resultCount?: number;
 }
 
-export function SearchBar({
-  query,
-  onQueryChange,
-  sortBy,
-  onSortChange,
-  resultCount,
-}: SearchBarProps) {
+export function SearchBar({ query, onQueryChange, sortBy, onSortChange, resultCount }: SearchBarProps) {
   return (
     <div className="flex w-full min-w-0 flex-row flex-wrap items-center gap-2">
       {/* Search input */}
       <div className="relative max-w-full min-w-30 flex-1">
-        <Input
-          placeholder="Search workspaces & workflows…"
-          value={query}
-          onChange={(e) => onQueryChange(e.target.value)}
-          className="h-9 w-full pr-8 text-sm"
-        />
+        <Input placeholder="Search workspaces & workflows…" value={query} onChange={(e) => onQueryChange(e.target.value)} className="h-9 w-full pr-8 text-sm" />
         {query && (
-          <button
-            onClick={() => onQueryChange("")}
-            className="text-muted-foreground hover:text-foreground absolute top-1/2 right-2.5 -translate-y-1/2"
-          >
+          <button onClick={() => onQueryChange("")} className="text-muted-foreground hover:text-foreground absolute top-1/2 right-2.5 -translate-y-1/2">
             <HiXMark className="h-4 w-4" />
           </button>
         )}
@@ -69,11 +55,7 @@ export function SearchBar({
           <DropdownMenuLabel className="text-xs">Sort by</DropdownMenuLabel>
           <DropdownMenuSeparator />
           {(Object.entries(SORT_LABELS) as [SortOption, string][]).map(([key, label]) => (
-            <DropdownMenuItem
-              key={key}
-              onClick={() => onSortChange(key)}
-              className={sortBy === key ? "bg-accent" : ""}
-            >
+            <DropdownMenuItem key={key} onClick={() => onSortChange(key)} className={sortBy === key ? "bg-accent" : ""}>
               {label}
             </DropdownMenuItem>
           ))}

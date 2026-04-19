@@ -12,13 +12,7 @@ import {
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 
-export type WorkflowSortOption =
-  | "name-asc"
-  | "name-desc"
-  | "date-newest"
-  | "date-oldest"
-  | "status"
-  | "nodes";
+export type WorkflowSortOption = "name-asc" | "name-desc" | "date-newest" | "date-oldest" | "status" | "nodes";
 
 const SORT_LABELS: Record<WorkflowSortOption, string> = {
   "name-asc": "Name (A–Z)",
@@ -37,28 +31,14 @@ interface WorkflowSearchBarProps {
   resultCount?: number;
 }
 
-export function WorkflowSearchBar({
-  query,
-  onQueryChange,
-  sortBy,
-  onSortChange,
-  resultCount,
-}: WorkflowSearchBarProps) {
+export function WorkflowSearchBar({ query, onQueryChange, sortBy, onSortChange, resultCount }: WorkflowSearchBarProps) {
   return (
     <div className="flex w-full min-w-0 flex-row flex-wrap items-center gap-2">
       {/* Search input */}
       <div className="relative max-w-full min-w-30 flex-1">
-        <Input
-          placeholder="Search workflows…"
-          value={query}
-          onChange={(e) => onQueryChange(e.target.value)}
-          className="h-9 w-full pr-8 text-sm"
-        />
+        <Input placeholder="Search workflows…" value={query} onChange={(e) => onQueryChange(e.target.value)} className="h-9 w-full pr-8 text-sm" />
         {query && (
-          <button
-            onClick={() => onQueryChange("")}
-            className="text-muted-foreground hover:text-foreground absolute top-1/2 right-2.5 -translate-y-1/2"
-          >
+          <button onClick={() => onQueryChange("")} className="text-muted-foreground hover:text-foreground absolute top-1/2 right-2.5 -translate-y-1/2">
             <HiXMark className="h-4 w-4" />
           </button>
         )}
@@ -76,11 +56,7 @@ export function WorkflowSearchBar({
           <DropdownMenuLabel className="text-xs">Sort by</DropdownMenuLabel>
           <DropdownMenuSeparator />
           {(Object.entries(SORT_LABELS) as [WorkflowSortOption, string][]).map(([key, label]) => (
-            <DropdownMenuItem
-              key={key}
-              onClick={() => onSortChange(key)}
-              className={sortBy === key ? "bg-accent" : ""}
-            >
+            <DropdownMenuItem key={key} onClick={() => onSortChange(key)} className={sortBy === key ? "bg-accent" : ""}>
               {label}
             </DropdownMenuItem>
           ))}

@@ -3,12 +3,8 @@
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
-} from "@/components/ui/dialog";
-import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { HiOutlineFolder, HiOutlineTrash } from "react-icons/hi2";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { MdDeleteForever, MdRestoreFromTrash } from "react-icons/md";
@@ -22,9 +18,7 @@ interface TrashGridProps {
   onSelectionChange: (ids: Set<string>) => void;
 }
 
-export default function TrashGrid({
-  workspaces, onRestored, onPermanentDeleted, selectedIds, onSelectionChange,
-}: TrashGridProps) {
+export default function TrashGrid({ workspaces, onRestored, onPermanentDeleted, selectedIds, onSelectionChange }: TrashGridProps) {
   const [permanentDeleteOpen, setPermanentDeleteOpen] = useState(false);
   const [selectedWs, setSelectedWs] = useState<Workspace | null>(null);
   const [batchDeleteOpen, setBatchDeleteOpen] = useState(false);
@@ -64,20 +58,27 @@ export default function TrashGrid({
   }
 
   return (
-    <div className="relative min-h-[500px]" onClick={() => onSelectionChange(new Set())}>
+    <div className="relative min-h-125" onClick={() => onSelectionChange(new Set())}>
       {hasSelection && (
-        <div className="bg-muted/80 border-border mb-4 flex items-center gap-3 rounded border px-4 py-2.5 backdrop-blur-sm" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="bg-muted/80 border-border mb-4 flex items-center gap-3 rounded border px-4 py-2.5 backdrop-blur-sm"
+          onClick={(e) => e.stopPropagation()}
+        >
           <span className="text-sm font-medium">{selectedIds.size} selected</span>
           <div className="bg-border h-4 w-px" />
-          <Button variant="ghost" size="sm" className="text-xs" onClick={() => {
-            selectedIds.forEach((id) => onRestored(id));
-            onSelectionChange(new Set());
-          }}>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-xs"
+            onClick={() => {
+              selectedIds.forEach((id) => onRestored(id));
+              onSelectionChange(new Set());
+            }}
+          >
             <MdRestoreFromTrash className="mr-1.5 h-3.5 w-3.5 text-emerald-500" />
             Restore Selected
           </Button>
-          <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive text-xs"
-            onClick={() => setBatchDeleteOpen(true)}>
+          <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive text-xs" onClick={() => setBatchDeleteOpen(true)}>
             <MdDeleteForever className="mr-1.5 h-3.5 w-3.5" />
             Delete Selected Forever
           </Button>
@@ -92,13 +93,25 @@ export default function TrashGrid({
         {workspaces.map((ws) => {
           const isSelected = selectedIds.has(ws.id);
           return (
-            <Card key={ws.id}
-              className={`group relative border-dashed opacity-75 cursor-pointer transition-all hover:opacity-100 ${isSelected ? "border-primary/50 bg-primary/5 !opacity-100 ring-1 ring-primary" : ""}`}
-              onClick={(e) => toggleSelect(ws.id, e)}>
+            <Card
+              key={ws.id}
+              className={`group relative border-dashed opacity-75 transition-all hover:opacity-100 ${isSelected ? "border-primary/50 bg-primary/5 ring-primary opacity-100! ring-1" : ""}`}
+            >
               <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
                 <div className="flex min-w-0 flex-1 items-center gap-3">
-                  <div className="bg-muted shrink-0 rounded p-2">
-                    <HiOutlineFolder className="text-muted-foreground h-5 w-5" />
+                  <div
+                    className={`shrink-0 cursor-pointer rounded p-2 transition-colors ${
+                      isSelected ? "bg-primary text-primary-foreground" : "bg-muted hover:bg-muted/80"
+                    }`}
+                    onClick={(e) => toggleSelect(ws.id, e)}
+                  >
+                    {isSelected ? (
+                      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    ) : (
+                      <HiOutlineFolder className="text-muted-foreground h-5 w-5" />
+                    )}
                   </div>
                   <div className="min-w-0">
                     <CardTitle className="text-muted-foreground truncate text-sm leading-tight font-semibold">{ws.name}</CardTitle>
@@ -118,8 +131,13 @@ export default function TrashGrid({
                       <MdRestoreFromTrash className="mr-2 h-4 w-4 text-emerald-500" />
                       Restore
                     </DropdownMenuItem>
-                    <DropdownMenuItem className="text-destructive focus:text-destructive"
-                      onClick={() => { setSelectedWs(ws); setPermanentDeleteOpen(true); }}>
+                    <DropdownMenuItem
+                      className="text-destructive focus:text-destructive"
+                      onClick={() => {
+                        setSelectedWs(ws);
+                        setPermanentDeleteOpen(true);
+                      }}
+                    >
                       <MdDeleteForever className="mr-2 h-4 w-4" />
                       Delete Forever
                     </DropdownMenuItem>
@@ -138,26 +156,44 @@ export default function TrashGrid({
 
       <Dialog open={permanentDeleteOpen} onOpenChange={setPermanentDeleteOpen}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Delete Permanently</DialogTitle></DialogHeader>
+          <DialogHeader>
+            <DialogTitle>Delete Permanently</DialogTitle>
+          </DialogHeader>
           <p className="text-muted-foreground text-sm">
             Are you sure you want to permanently delete <strong>{selectedWs?.name}</strong>? This action cannot be undone.
           </p>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setPermanentDeleteOpen(false)}>Cancel</Button>
-            <Button variant="destructive" onClick={handlePermanentDelete}>Delete Forever</Button>
+            <Button variant="outline" onClick={() => setPermanentDeleteOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handlePermanentDelete}>
+              Delete Forever
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       <Dialog open={batchDeleteOpen} onOpenChange={setBatchDeleteOpen}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Delete {selectedIds.size} Item{selectedIds.size !== 1 ? "s" : ""} Permanently</DialogTitle></DialogHeader>
+          <DialogHeader>
+            <DialogTitle>
+              Delete {selectedIds.size} Item{selectedIds.size !== 1 ? "s" : ""} Permanently
+            </DialogTitle>
+          </DialogHeader>
           <p className="text-muted-foreground text-sm">
-            Are you sure you want to permanently delete <strong>{selectedIds.size} workspace{selectedIds.size !== 1 ? "s" : ""}</strong>? This action cannot be undone.
+            Are you sure you want to permanently delete{" "}
+            <strong>
+              {selectedIds.size} workspace{selectedIds.size !== 1 ? "s" : ""}
+            </strong>
+            ? This action cannot be undone.
           </p>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setBatchDeleteOpen(false)}>Cancel</Button>
-            <Button variant="destructive" onClick={handleBatchPermanentDelete}>Delete Forever</Button>
+            <Button variant="outline" onClick={() => setBatchDeleteOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleBatchPermanentDelete}>
+              Delete Forever
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

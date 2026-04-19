@@ -4,22 +4,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { HiOutlineFolder } from "react-icons/hi2";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { MdEdit, MdDeleteOutline } from "react-icons/md";
@@ -91,7 +80,7 @@ export default function WorkspaceGrid({
   }
 
   return (
-    <div className="relative min-h-[500px]" onClick={() => onSelectionChange(new Set())}>
+    <div className="relative min-h-125" onClick={() => onSelectionChange(new Set())}>
       {workspaces.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <div className="bg-muted mb-4 rounded p-4">
@@ -110,20 +99,28 @@ export default function WorkspaceGrid({
               <Card
                 key={ws.id}
                 className={`group hover:shadow-primary/5 hover:border-primary/30 relative cursor-pointer transition-all hover:shadow-lg ${
-                  isSelected ? "border-primary/50 bg-primary/5 shadow-primary/10 shadow-md ring-1 ring-primary" : ""
+                  isSelected ? "border-primary/50 bg-primary/5 shadow-primary/10 ring-primary shadow-md ring-1" : ""
                 }`}
-                onClick={(e) => toggleSelect(ws.id, e)}
-                onDoubleClick={() => router.push(`/workspace/${ws.id}`)}
+                onClick={() => router.push(`/workspace/${ws.id}`)}
               >
                 <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
                   <div className="flex min-w-0 flex-1 items-center gap-3">
-                    <div className="shrink-0 rounded bg-linear-to-br from-violet-500/10 to-indigo-500/10 p-2">
-                      <HiOutlineFolder className="h-5 w-5 text-violet-600 dark:text-violet-400" />
+                    <div
+                      className={`shrink-0 cursor-pointer rounded p-2 transition-colors ${
+                        isSelected ? "bg-primary text-primary-foreground" : "bg-linear-to-br from-violet-500/10 to-indigo-500/10 hover:bg-violet-500/20"
+                      }`}
+                      onClick={(e) => toggleSelect(ws.id, e)}
+                    >
+                      {isSelected ? (
+                        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      ) : (
+                        <HiOutlineFolder className="h-5 w-5 text-violet-600 dark:text-violet-400" />
+                      )}
                     </div>
                     <div className="min-w-0">
-                      <CardTitle className="truncate text-sm leading-tight font-semibold">
-                        {ws.name}
-                      </CardTitle>
+                      <CardTitle className="truncate text-sm leading-tight font-semibold">{ws.name}</CardTitle>
                       <CardDescription className="mt-0.5 text-xs">
                         {ws._count.workflows} workflow{ws._count.workflows !== 1 ? "s" : ""}
                       </CardDescription>
@@ -131,11 +128,7 @@ export default function WorkspaceGrid({
                   </div>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100"
-                      >
+                      <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100">
                         <BsThreeDotsVertical className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
@@ -150,10 +143,7 @@ export default function WorkspaceGrid({
                         <MdEdit className="mr-2 h-4 w-4" />
                         Rename
                       </DropdownMenuItem>
-                      <DropdownMenuItem
-                        className="text-destructive focus:text-destructive"
-                        onClick={() => onDeleted(ws.id)}
-                      >
+                      <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => onDeleted(ws.id)}>
                         <MdDeleteOutline className="mr-2 h-4 w-4" />
                         Move to Trash
                       </DropdownMenuItem>
@@ -161,9 +151,7 @@ export default function WorkspaceGrid({
                   </DropdownMenu>
                 </CardHeader>
                 <CardContent className="pt-0">
-                  <p className="text-muted-foreground mb-1 truncate text-xs">
-                    {ws.description || "No description"}
-                  </p>
+                  <p className="text-muted-foreground mb-1 truncate text-xs">{ws.description || "No description"}</p>
                   <p className="text-muted-foreground truncate text-[11px]" suppressHydrationWarning>
                     Last updated{" "}
                     {new Date(ws.updatedAt).toLocaleDateString("en-GB", {
@@ -193,9 +181,7 @@ export default function WorkspaceGrid({
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Create Workspace</DialogTitle>
-            <p className="text-muted-foreground text-sm">
-              Set up a new workspace to organize your workflows.
-            </p>
+            <p className="text-muted-foreground text-sm">Set up a new workspace to organize your workflows.</p>
           </DialogHeader>
           <div className="flex flex-col gap-4 py-2">
             <div className="flex flex-col gap-2">

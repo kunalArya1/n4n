@@ -9,10 +9,7 @@ import { HiOutlineChevronRight } from "react-icons/hi2";
 
 export const dynamic = "force-dynamic";
 
-const DUMMY_WORKSPACES: Record<
-  string,
-  { name: string; description: string; workflows: Parameters<typeof WorkflowContainer>[0]["initialWorkflows"] }
-> = {
+const DUMMY_WORKSPACES: Record<string, { name: string; description: string; workflows: Parameters<typeof WorkflowContainer>[0]["initialWorkflows"] }> = {
   "ws-1": {
     name: "Marketing Automation",
     description: "Automated email and social media workflows",
@@ -159,11 +156,7 @@ const DUMMY_WORKSPACES: Record<
   },
 };
 
-export default async function WorkspacePage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default async function WorkspacePage({ params }: { params: Promise<{ id: string }> }) {
   const user = await currentUser();
   if (!user) redirect("/sign-in");
 
@@ -183,10 +176,7 @@ export default async function WorkspacePage({
               <Image src="/logo.svg" alt="Logo" width={32} height={32} />
             </Link>
             <HiOutlineChevronRight className="text-muted-foreground h-3.5 w-3.5" />
-            <Link
-              href="/dashboard"
-              className="text-muted-foreground hover:text-foreground text-sm transition-colors"
-            >
+            <Link href="/dashboard" className="text-muted-foreground hover:text-foreground text-sm transition-colors">
               Workspaces
             </Link>
             <HiOutlineChevronRight className="text-muted-foreground h-3.5 w-3.5" />
@@ -199,11 +189,7 @@ export default async function WorkspacePage({
         </div>
       </header>
       <main className="mx-auto max-w-7xl px-6 py-10">
-        <WorkflowContainer
-          initialWorkflows={JSON.parse(JSON.stringify(workspace.workflows))}
-          workspaceId={id}
-          workspaceName={workspace.name}
-        />
+        <WorkflowContainer initialWorkflows={JSON.parse(JSON.stringify(workspace.workflows))} workspaceId={id} workspaceName={workspace.name} />
       </main>
     </div>
   );

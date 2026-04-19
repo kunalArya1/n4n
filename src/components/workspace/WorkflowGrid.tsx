@@ -3,15 +3,11 @@
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { HiOutlineBolt } from "react-icons/hi2";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { MdEdit, MdDeleteOutline, MdPlayArrow, MdPause } from "react-icons/md";
@@ -38,8 +34,16 @@ interface WorkflowGridProps {
 }
 
 export default function WorkflowGrid({
-  workflows, createOpen, onCreateOpenChange, onCreated, onRenamed, onDeleted,
-  onStatusChanged, workspaceId, selectedIds, onSelectionChange,
+  workflows,
+  createOpen,
+  onCreateOpenChange,
+  onCreated,
+  onRenamed,
+  onDeleted,
+  onStatusChanged,
+  workspaceId,
+  selectedIds,
+  onSelectionChange,
 }: WorkflowGridProps) {
   const [renameOpen, setRenameOpen] = useState(false);
   const [newName, setNewName] = useState("");
@@ -50,9 +54,15 @@ export default function WorkflowGrid({
     if (!newName.trim()) return;
     const now = new Date().toISOString();
     const wf: Workflow = {
-      id: `wf-${Date.now()}`, workspaceId, name: newName.trim(),
-      description: newDescription.trim() || undefined, status: "draft",
-      isDeleted: false, deletedAt: null, createdAt: now, updatedAt: now,
+      id: `wf-${Date.now()}`,
+      workspaceId,
+      name: newName.trim(),
+      description: newDescription.trim() || undefined,
+      status: "draft",
+      isDeleted: false,
+      deletedAt: null,
+      createdAt: now,
+      updatedAt: now,
       _count: { nodes: 0, edges: 0 },
     };
     onCreated(wf);
@@ -77,7 +87,7 @@ export default function WorkflowGrid({
   }
 
   return (
-    <div className="relative min-h-[500px]" onClick={() => onSelectionChange(new Set())}>
+    <div className="relative min-h-125" onClick={() => onSelectionChange(new Set())}>
       {workflows.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <div className="bg-muted mb-4 rounded p-4">
@@ -94,15 +104,26 @@ export default function WorkflowGrid({
             const statusCfg = STATUS_CONFIG[wf.status];
             const isSelected = selectedIds.has(wf.id);
             return (
-              <Card key={wf.id}
-                className={`group hover:shadow-primary/5 hover:border-primary/30 relative cursor-pointer transition-all hover:shadow-lg ${isSelected ? "border-primary/50 bg-primary/5 shadow-primary/10 shadow-md ring-1 ring-primary" : ""}`}
-                onClick={(e) => toggleSelect(wf.id, e)}
-                onDoubleClick={() => console.log("Open workflow:", wf.id)}
+              <Card
+                key={wf.id}
+                className={`group hover:shadow-primary/5 hover:border-primary/30 relative cursor-pointer transition-all hover:shadow-lg ${isSelected ? "border-primary/50 bg-primary/5 shadow-primary/10 ring-primary shadow-md ring-1" : ""}`}
+                onClick={() => console.log("Open workflow:", wf.id)}
               >
                 <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
                   <div className="flex min-w-0 flex-1 items-center gap-3">
-                    <div className="shrink-0 rounded bg-linear-to-br from-cyan-500/10 to-blue-500/10 p-2">
-                      <HiOutlineBolt className="h-5 w-5 text-cyan-500 dark:text-cyan-400" />
+                    <div
+                      className={`shrink-0 cursor-pointer rounded p-2 transition-colors ${
+                        isSelected ? "bg-primary text-primary-foreground" : "bg-linear-to-br from-cyan-500/10 to-blue-500/10 hover:bg-cyan-500/20"
+                      }`}
+                      onClick={(e) => toggleSelect(wf.id, e)}
+                    >
+                      {isSelected ? (
+                        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      ) : (
+                        <HiOutlineBolt className="h-5 w-5 text-cyan-500 dark:text-cyan-400" />
+                      )}
                     </div>
                     <div className="min-w-0">
                       <CardTitle className="truncate text-sm leading-tight font-semibold">{wf.name}</CardTitle>
@@ -123,7 +144,13 @@ export default function WorkflowGrid({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                      <DropdownMenuItem onClick={() => { setSelectedWf(wf); setNewName(wf.name); setRenameOpen(true); }}>
+                      <DropdownMenuItem
+                        onClick={() => {
+                          setSelectedWf(wf);
+                          setNewName(wf.name);
+                          setRenameOpen(true);
+                        }}
+                      >
                         <MdEdit className="mr-2 h-4 w-4" /> Rename
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
@@ -138,8 +165,7 @@ export default function WorkflowGrid({
                         </DropdownMenuItem>
                       )}
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem className="text-destructive focus:text-destructive"
-                        onClick={() => onDeleted(wf.id)}>
+                      <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => onDeleted(wf.id)}>
                         <MdDeleteOutline className="mr-2 h-4 w-4" /> Move to Trash
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -158,10 +184,16 @@ export default function WorkflowGrid({
       )}
 
       {/* Create Dialog */}
-      <Dialog open={createOpen} onOpenChange={(open) => {
-        if (!open) { setNewName(""); setNewDescription(""); }
-        onCreateOpenChange(open);
-      }}>
+      <Dialog
+        open={createOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            setNewName("");
+            setNewDescription("");
+          }
+          onCreateOpenChange(open);
+        }}
+      >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Create Workflow</DialogTitle>
@@ -170,22 +202,36 @@ export default function WorkflowGrid({
           <div className="flex flex-col gap-4 py-2">
             <div className="flex flex-col gap-2">
               <Label htmlFor="wf-name">Name</Label>
-              <Input id="wf-name" placeholder="e.g. Email Drip Campaign" value={newName}
+              <Input
+                id="wf-name"
+                placeholder="e.g. Email Drip Campaign"
+                value={newName}
                 onChange={(e) => setNewName(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleCreate()} autoFocus />
+                onKeyDown={(e) => e.key === "Enter" && handleCreate()}
+                autoFocus
+              />
             </div>
             <div className="flex flex-col gap-2">
               <Label htmlFor="wf-desc">
                 Description <span className="text-muted-foreground font-normal">(optional)</span>
               </Label>
-              <Textarea id="wf-desc" placeholder="Brief description of this workflow" value={newDescription}
-                onChange={(e) => setNewDescription(e.target.value)} rows={3}
-                className="max-h-18 resize-none overflow-y-auto" />
+              <Textarea
+                id="wf-desc"
+                placeholder="Brief description of this workflow"
+                value={newDescription}
+                onChange={(e) => setNewDescription(e.target.value)}
+                rows={3}
+                className="max-h-18 resize-none overflow-y-auto"
+              />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => onCreateOpenChange(false)}>Cancel</Button>
-            <Button onClick={handleCreate} disabled={!newName.trim()}>Create</Button>
+            <Button variant="outline" onClick={() => onCreateOpenChange(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleCreate} disabled={!newName.trim()}>
+              Create
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -193,12 +239,23 @@ export default function WorkflowGrid({
       {/* Rename Dialog */}
       <Dialog open={renameOpen} onOpenChange={setRenameOpen}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Rename</DialogTitle></DialogHeader>
-          <Input placeholder="New name" value={newName} onChange={(e) => setNewName(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleRename()} autoFocus />
+          <DialogHeader>
+            <DialogTitle>Rename</DialogTitle>
+          </DialogHeader>
+          <Input
+            placeholder="New name"
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleRename()}
+            autoFocus
+          />
           <DialogFooter>
-            <Button variant="outline" onClick={() => setRenameOpen(false)}>Cancel</Button>
-            <Button onClick={handleRename} disabled={!newName.trim()}>Rename</Button>
+            <Button variant="outline" onClick={() => setRenameOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleRename} disabled={!newName.trim()}>
+              Rename
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

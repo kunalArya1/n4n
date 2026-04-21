@@ -1,6 +1,8 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { HiOutlineTrash, HiOutlinePlus } from "react-icons/hi2";
 
 export default function ConfigPanel({ node, onChange }: { node: any, onChange: (id: string, data: any) => void }) {
   return (
@@ -68,6 +70,45 @@ export default function ConfigPanel({ node, onChange }: { node: any, onChange: (
               />
             </div>
           </>
+        )}
+        {node.type === "switch" && (
+          <div className="flex flex-col gap-3">
+            <Label className="text-xs font-semibold uppercase text-muted-foreground">Cases</Label>
+            {(node.data.cases || ["Case 1", "Default"]).map((c: string, i: number, arr: string[]) => (
+              <div key={i} className="flex gap-2 items-center">
+                <Input 
+                  value={c}
+                  className="h-8 text-xs"
+                  disabled={i === arr.length - 1} // Disable editing the last "Default" case
+                  onChange={(e) => {
+                    const newCases = [...(node.data.cases || ["Case 1", "Default"])];
+                    newCases[i] = e.target.value;
+                    onChange(node.id, { cases: newCases });
+                  }}
+                />
+                {i !== arr.length - 1 && (
+                  <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive" onClick={() => {
+                    const newCases = [...(node.data.cases || ["Case 1", "Default"])];
+                    newCases.splice(i, 1);
+                    onChange(node.id, { cases: newCases });
+                  }}>
+                    <HiOutlineTrash className="h-4 w-4" />
+                  </Button>
+                )}
+                {i === arr.length - 1 && (
+                  <div className="h-8 w-8 shrink-0" /> // Spacer for alignment
+                )}
+              </div>
+            ))}
+            <Button variant="outline" size="sm" className="w-full mt-1" onClick={() => {
+              const newCases = [...(node.data.cases || ["Case 1", "Default"])];
+              newCases.splice(newCases.length - 1, 0, `Case ${newCases.length}`);
+              onChange(node.id, { cases: newCases });
+            }}>
+              <HiOutlinePlus className="h-4 w-4 mr-2" />
+              Add Case
+            </Button>
+          </div>
         )}
       </div>
     </div>

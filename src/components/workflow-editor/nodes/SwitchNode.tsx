@@ -11,17 +11,17 @@ export default function SwitchNode({ data, selected }: any) {
         </div>
         <div className="font-medium text-sm text-foreground truncate">{data.label || "Switch"}</div>
       </div>
-      
-      <div className="mt-3 flex flex-col gap-2 relative">
-        {(data.cases || ["Case 1", "Case 2", "Default"]).map((c: string, i: number) => (
-          <div key={i} className="flex items-center justify-end text-[10px] text-muted-foreground uppercase font-semibold">
-            <span className="mr-2">{c}</span>
-            <Handle 
-              type="source" 
-              id={`case-${i}`} 
-              position={Position.Right} 
-              style={{ top: `${60 + i * 15}%` }} 
-              className="w-2 h-2 bg-indigo-500 border border-background" 
+
+      <div className="mt-3 flex flex-col gap-2">
+        {(data.cases || ["Case 1", "Default"]).map((c: string, i: number) => (
+          <div key={i} className="flex items-center justify-end text-[10px] text-muted-foreground uppercase font-semibold relative">
+            <span>{c}</span>
+            <Handle
+              type="source"
+              id={`case-${i}`}
+              position={Position.Right}
+              style={{ top: '50%', right: '-16px' }}
+              className="w-2.5 h-2.5 bg-indigo-500 border-2 border-background"
             />
           </div>
         ))}

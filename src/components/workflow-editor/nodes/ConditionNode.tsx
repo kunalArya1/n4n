@@ -11,15 +11,15 @@ export default function ConditionNode({ data, selected }: any) {
         </div>
         <div className="font-medium text-sm text-foreground truncate">{data.label || "Condition"}</div>
       </div>
-      
-      <div className="mt-3 flex flex-col gap-2 relative">
-        <div className="flex items-center justify-end text-[10px] text-muted-foreground uppercase font-semibold">
-          <span className="mr-2">True</span>
-          <Handle type="source" id="true" position={Position.Right} style={{ top: '65%' }} className="w-2 h-2 bg-emerald-500 border border-background" />
+
+      <div className="mt-3 flex flex-col gap-2">
+        <div className="flex items-center justify-end text-[10px] font-semibold relative">
+          <span className="text-emerald-600 dark:text-emerald-400 uppercase">True</span>
+          <Handle type="source" id="true" position={Position.Right} style={{ top: '50%', right: '-16px' }} className="w-2.5 h-2.5 bg-emerald-500 border-2 border-background" />
         </div>
-        <div className="flex items-center justify-end text-[10px] text-muted-foreground uppercase font-semibold">
-          <span className="mr-2">False</span>
-          <Handle type="source" id="false" position={Position.Right} style={{ top: '85%' }} className="w-2 h-2 bg-red-500 border border-background" />
+        <div className="flex items-center justify-end text-[10px] font-semibold relative">
+          <span className="text-red-600 dark:text-red-400 uppercase">False</span>
+          <Handle type="source" id="false" position={Position.Right} style={{ top: '50%', right: '-16px' }} className="w-2.5 h-2.5 bg-red-500 border-2 border-background" />
         </div>
       </div>
     </div>

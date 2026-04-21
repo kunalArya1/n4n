@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -49,6 +50,7 @@ export default function WorkflowGrid({
   const [newName, setNewName] = useState("");
   const [newDescription, setNewDescription] = useState("");
   const [selectedWf, setSelectedWf] = useState<Workflow | null>(null);
+  const router = useRouter();
 
   function handleCreate() {
     if (!newName.trim()) return;
@@ -107,7 +109,7 @@ export default function WorkflowGrid({
               <Card
                 key={wf.id}
                 className={`group hover:shadow-primary/5 hover:border-primary/30 relative cursor-pointer transition-all hover:shadow-lg ${isSelected ? "border-primary/50 bg-primary/5 shadow-primary/10 ring-primary shadow-md ring-1" : ""}`}
-                onClick={() => console.log("Open workflow:", wf.id)}
+                onClick={() => router.push(`/workflow/${wf.id}?name=${encodeURIComponent(wf.name)}`)}
               >
                 <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
                   <div className="flex min-w-0 flex-1 items-center gap-3">

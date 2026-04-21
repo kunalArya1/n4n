@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { HiOutlineTrash, HiOutlineArrowPath, HiOutlinePlus } from "react-icons/hi2";
+import { HiOutlineTrash, HiOutlineArrowPath, HiOutlinePlus, HiOutlineArrowDownTray } from "react-icons/hi2";
 import { MdDeleteOutline } from "react-icons/md";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import WorkflowGrid from "./WorkflowGrid";
@@ -26,6 +26,47 @@ export default function WorkflowContainer({ initialWorkflows, workspaceId, works
   const [sortBy, setSortBy] = useState<WorkflowSortOption>("date-newest");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [trashSelectedIds, setTrashSelectedIds] = useState<Set<string>>(new Set());
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleImportFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const content = event.target?.result as string;
+        const parsed = JSON.parse(content);
+        
+        const now = new Date().toISOString();
+        const newWf: Workflow = {
+          ...parsed,
+          id: `wf-${Date.now()}`,
+          workspaceId,
+          name: parsed.name || file.name.replace(".json", ""),
+          description: parsed.description || undefined,
+          status: "draft",
+          isDeleted: false,
+          deletedAt: null,
+          createdAt: now,
+          updatedAt: now,
+          _count: parsed._count || { nodes: 0, edges: 0 },
+        };
+        
+        setWorkflows((prev) => [newWf, ...prev]);
+      } catch (error) {
+        console.error("Failed to parse workflow file", error);
+      }
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    };
+    reader.readAsText(file);
+  };
 
   const filteredWorkflows = useMemo(() => {
     let result = [...workflows];
@@ -143,9 +184,21 @@ export default function WorkflowContainer({ initialWorkflows, workspaceId, works
 
           <div className="flex shrink-0 flex-wrap items-center gap-2">
             {!showTrash && (
-              <Button variant="outline" size="sm" className="gap-2 text-xs" onClick={() => setCreateOpen(true)}>
-                <HiOutlinePlus className="h-3.5 w-3.5" /> Create
-              </Button>
+              <>
+                <Button variant="outline" size="sm" className="gap-2 text-xs" onClick={handleImportClick}>
+                  <HiOutlineArrowDownTray className="h-3.5 w-3.5" /> Import
+                </Button>
+                <input
+                  type="file"
+                  accept=".json"
+                  className="hidden"
+                  ref={fileInputRef}
+                  onChange={handleImportFile}
+                />
+                <Button variant="outline" size="sm" className="gap-2 text-xs" onClick={() => setCreateOpen(true)}>
+                  <HiOutlinePlus className="h-3.5 w-3.5" /> Create
+                </Button>
+              </>
             )}
 
             {showTrash && trashWorkflows.length > 0 && (

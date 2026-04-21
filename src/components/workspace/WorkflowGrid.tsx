@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { HiOutlineBolt } from "react-icons/hi2";
 import { BsThreeDotsVertical } from "react-icons/bs";
-import { MdEdit, MdDeleteOutline, MdPlayArrow, MdPause } from "react-icons/md";
+import { MdEdit, MdDeleteOutline, MdPlayArrow, MdPause, MdDownload } from "react-icons/md";
 import { Workflow, WorkflowStatus } from "@/types";
 
 const STATUS_CONFIG: Record<WorkflowStatus, { label: string; color: string; bg: string }> = {
@@ -152,6 +152,19 @@ export default function WorkflowGrid({
                         }}
                       >
                         <MdEdit className="mr-2 h-4 w-4" /> Rename
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => {
+                          const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(wf, null, 2));
+                          const downloadAnchorNode = document.createElement("a");
+                          downloadAnchorNode.setAttribute("href", dataStr);
+                          downloadAnchorNode.setAttribute("download", `${wf.name}.json`);
+                          document.body.appendChild(downloadAnchorNode);
+                          downloadAnchorNode.click();
+                          downloadAnchorNode.remove();
+                        }}
+                      >
+                        <MdDownload className="mr-2 h-4 w-4" /> Download
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       {wf.status !== "active" && (

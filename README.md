@@ -1,36 +1,121 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# n4n - AI Workflow Automation Platform
+
+n4n is an AI-powered workflow automation platform that allows users to create, manage, and execute automated workflows for various business processes.
+
+## Project Overview
+
+This project consists of a Next.js frontend and a FastAPI backend that work together to provide a seamless workflow automation experience. The application uses Clerk for authentication and PostgreSQL for data storage.
+
+## Environment Variables
+
+The following environment variables need to be set in your `.env` file:
+
+### Frontend Variables
+
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` - Clerk publishable key for frontend authentication
+- `NEXT_PUBLIC_API_URL` - The URL of the backend API (e.g., http://localhost:8000)
+
+### Backend Variables
+
+- `CLERK_SECRET_KEY` - Clerk secret key for backend authentication
+- `CLERK_API_URL` - Clerk API URL (defaults to https://api.clerk.dev/v1)
+- `DATABASE_URL` - PostgreSQL database connection string
+- `AUTHORIZED_ORIGINS` - Comma-separated list of allowed origins for CORS (e.g., http://localhost:3000)
+
+### Example .env File
+
+```env
+# Frontend
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+NEXT_PUBLIC_API_URL=http://localhost:8000
+
+# Backend
+CLERK_SECRET_KEY=sk_test_...
+DATABASE_URL=postgresql://username:password@localhost:5432/database_name
+AUTHORIZED_ORIGINS=http://localhost:3000
+```
+
+## Project Structure
+
+```
+.
+├── server/                 # Backend API (FastAPI)
+│   ├── main.py            # Main application file
+│   ├── auth/               # Authentication related code
+│   ├── config/            # Configuration files
+│   ├── database/          # Database connection and models
+│   └── models/            # Database models
+├── src/                   # Frontend (Next.js)
+│   ├── app/               # Application pages and components
+│   ├── components/        # Reusable UI components
+│   ├── lib/               # Utility functions and API clients
+│   └── types/             # TypeScript type definitions
+├── public/                # Static assets
+└── .env                   # Environment variables
+```
+
+## Features
+
+- User authentication with Clerk
+- Workspace management (create, view, delete)
+- Application creation and management
+- Dashboard with workspace overview
+- Responsive UI with dark mode support
 
 ## Getting Started
 
-First, run the development server:
+1. Clone the repository
+2. Set up the environment variables in a `.env` file
+3. Install dependencies for both frontend and backend
+4. Start the backend server
+5. Start the frontend development server
+
+## API Endpoints
+
+- `POST /register` - Register a new user
+- `GET /protected` - Validate user authentication
+- `POST /applications` - Create a new application/workspace
+- `GET /applications` - Retrieve all applications for a user
+- `DELETE /applications/{id}` - Delete an application
+
+## Tech Stack
+
+### Frontend
+- Next.js 14 with TypeScript
+- Tailwind CSS for styling
+- Clerk for authentication
+- shadcn/ui components
+
+### Backend
+- FastAPI for the REST API
+- SQLAlchemy for database operations
+- PostgreSQL for data storage
+
+## Development
+
+### Frontend Development
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Backend Development
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+python server/main.py
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Deployment
 
-## Learn More
+The application can be deployed to any cloud platform that supports Docker containers or Node.js/Python applications.
 
-To learn more about Next.js, take a look at the following resources:
+## Contributing
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Fork the repository
+2. Create a new branch for your feature
+3. Make your changes
+4. Submit a pull request
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## License
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This project is licensed under the MIT License.

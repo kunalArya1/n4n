@@ -5,3 +5,4 @@ psycopg2-binary
 python-dotenv
 clerk-backend-api
 gunicorn
+PyJWT

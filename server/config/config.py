@@ -4,8 +4,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 CLERK_SECRET_KEY = getenv("CLERK_SECRET_KEY")
+CLERK_API_URL = getenv("CLERK_API_URL", "https://api.clerk.dev/v1")
 DATABASE_URL = getenv("DATABASE_URL")
-AUTHORIZED_ORIGINS = getenv("AUTHORIZED_ORIGINS", "")
+AUTHORIZED_ORIGINS = getenv("AUTHORIZED_ORIGINS", "http://localhost:3000")
 
 if not CLERK_SECRET_KEY:
     raise RuntimeError("CLERK_SECRET_KEY is not set")

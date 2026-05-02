@@ -173,7 +173,7 @@ export default async function WorkspacePage({ params }: { params: Promise<{ id: 
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
           <div className="flex items-center gap-2">
             <Link href="/" className="flex items-center gap-3">
-              <Image src="/logo.svg" alt="Logo" width={32} height={32} />
+              <Image src="/logo.svg" alt="Logo" width={26} height={26} />
             </Link>
             <HiOutlineChevronRight className="text-muted-foreground h-3.5 w-3.5" />
             <Link href="/dashboard" className="text-muted-foreground hover:text-foreground text-sm transition-colors">

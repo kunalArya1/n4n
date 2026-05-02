@@ -13,6 +13,10 @@ import ConditionNode from "./nodes/ConditionNode";
 import SwitchNode from "./nodes/SwitchNode";
 import LoopNode from "./nodes/LoopNode";
 import IntegrateNode from "./nodes/IntegrateNode";
+import AgentsNode from "./nodes/AgentsNode";
+import MCPServerNode from "./nodes/MCPServerNode";
+import WebhookNode from "./nodes/WebhookNode";
+import DatabaseNode from "./nodes/DatabaseNode";
 
 const nodeTypes = {
   start: StartNode,
@@ -22,6 +26,10 @@ const nodeTypes = {
   switch: SwitchNode,
   loop: LoopNode,
   integrate: IntegrateNode,
+  agents: AgentsNode,
+  mcpserver: MCPServerNode,
+  webhook: WebhookNode,
+  database: DatabaseNode,
 };
 
 const initialNodes: Node[] = [

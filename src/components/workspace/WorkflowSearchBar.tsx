@@ -12,30 +12,31 @@ import {
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 
-export type SortOption = "name-asc" | "name-desc" | "date-newest" | "date-oldest" | "workflows";
+export type WorkflowSortOption = "name-asc" | "name-desc" | "date-newest" | "date-oldest" | "status" | "nodes";
 
-const SORT_LABELS: Record<SortOption, string> = {
+const SORT_LABELS: Record<WorkflowSortOption, string> = {
   "name-asc": "Name (A–Z)",
   "name-desc": "Name (Z–A)",
   "date-newest": "Newest first",
   "date-oldest": "Oldest first",
-  workflows: "Most workflows",
+  status: "Status",
+  nodes: "Most nodes",
 };
 
-interface SearchBarProps {
+interface WorkflowSearchBarProps {
   query: string;
   onQueryChange: (query: string) => void;
-  sortBy: SortOption;
-  onSortChange: (sort: SortOption) => void;
+  sortBy: WorkflowSortOption;
+  onSortChange: (sort: WorkflowSortOption) => void;
   resultCount?: number;
 }
 
-export function SearchBar({ query, onQueryChange, sortBy, onSortChange, resultCount }: SearchBarProps) {
+export function WorkflowSearchBar({ query, onQueryChange, sortBy, onSortChange, resultCount }: WorkflowSearchBarProps) {
   return (
     <div className="flex w-full min-w-0 flex-row flex-wrap items-center gap-2">
       {/* Search input */}
       <div className="relative max-w-full min-w-30 flex-1">
-        <Input placeholder="Search workspaces & workflows…" value={query} onChange={(e) => onQueryChange(e.target.value)} className="h-9 w-full pr-8 text-sm" />
+        <Input placeholder="Search workflows…" value={query} onChange={(e) => onQueryChange(e.target.value)} className="h-9 w-full pr-8 text-sm" />
         {query && (
           <button onClick={() => onQueryChange("")} className="text-muted-foreground hover:text-foreground absolute top-1/2 right-2.5 -translate-y-1/2">
             <HiXMark className="h-4 w-4" />
@@ -54,7 +55,7 @@ export function SearchBar({ query, onQueryChange, sortBy, onSortChange, resultCo
         <DropdownMenuContent align="end" className="w-44">
           <DropdownMenuLabel className="text-xs">Sort by</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          {(Object.entries(SORT_LABELS) as [SortOption, string][]).map(([key, label]) => (
+          {(Object.entries(SORT_LABELS) as [WorkflowSortOption, string][]).map(([key, label]) => (
             <DropdownMenuItem key={key} onClick={() => onSortChange(key)} className={sortBy === key ? "bg-accent" : ""}>
               {label}
             </DropdownMenuItem>

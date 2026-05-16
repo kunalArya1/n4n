@@ -19,3 +19,7 @@ AUTHORIZED_ORIGINS = [
     for origin in AUTHORIZED_ORIGINS.split(",")
     if origin.strip()
 ]
+
+AGENT_BASEURL = getenv("AGENT_BASE_URL")
+AGENT_KEY = getenv("AGENT_KEY")
+AGENT_MODEL = [M.strip() for M in getenv("AGENT_MODLES", "").split(",")]

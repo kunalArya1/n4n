@@ -47,3 +47,15 @@ next-env.d.ts
 
 __pycache__
 venv
+
+src
+.prettierignore
+.prettierrc
+components.json
+eslint.config.mjs
+get-pip.py
+next.config.ts
+package-lock.json
+package.json
+postcss.config.mjs
+tsconfig.json

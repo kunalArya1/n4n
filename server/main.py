@@ -1,31 +1,41 @@
 from fastapi import FastAPI, Depends, HTTPException, status, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
-from pydantic import BaseModel, validator
-from sqlalchemy.orm import Session
+from motor.motor_asyncio import AsyncIOMotorClient
+from bson import ObjectId
+from datetime import datetime, timezone
 import hashlib
-import datetime
+from contextlib import asynccontextmanager
 
-from database.database import Base, engine, get_db
+
 from auth.authenticate import get_current_user
-from models.user import User
-from models.application import Application
-from models.flows import Flow
+from models.user import UserModel, CreateUserModel
+from models.application import ApplicationModel, CreateApplicationModel, UpdateApplicationModel
+from models.flows import FlowModel, CreateFlowModel, UpdateFlowModel
 from config.config import AUTHORIZED_ORIGINS
+from database.database import db, init_db
+from tools import agents
 
-app = FastAPI()
+# ─── Health ──────b  # motor db instance
 
-# CORS configuration
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await init_db()
+    yield
+
+app = FastAPI(lifespan=lifespan)
+
+# ─── Middleware ────────────────────────────────────────────────
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=AUTHORIZED_ORIGINS,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE"],
     allow_headers=["Authorization", "Content-Type"],
-    allow_origin_regex="https?://localhost:*",  # Allow localhost on any port
+    allow_origin_regex="https?://localhost:*",
 )
 
-# Add security headers middleware
 @app.middleware("http")
 async def security_headers_middleware(request: Request, call_next):
     response = await call_next(request)
@@ -35,7 +45,6 @@ async def security_headers_middleware(request: Request, call_next):
     response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
     return response
 
-# Add a middleware to handle CORS preflight requests
 @app.middleware("http")
 async def cors_preflight_handler(request: Request, call_next):
     if request.method == "OPTIONS":
@@ -45,65 +54,28 @@ async def cors_preflight_handler(request: Request, call_next):
         response.headers["Access-Control-Allow-Methods"] = "*"
         response.headers["Access-Control-Allow-Headers"] = "*"
         return response
-    response = await call_next(request)
-    return response
+    return await call_next(request)
 
-# Create tables automatically
-Base.metadata.create_all(bind=engine)
+# ─── Health ────────────────────────────────────────────────────
 
 @app.get("/")
-def health():
+async def health():
     return {"status": "API running"}
 
-# Define a Pydantic model for registration data
-class RegistrationData(BaseModel):
-    username: str
-    clerk_user_id: str
-    
-    # Add validation for username
-    @validator('username')
-    def validate_username(cls, v):
-        if not v or not v.strip():
-            raise ValueError('Username cannot be empty')
-        if len(v) < 3:
-            raise ValueError('Username must be at least 3 characters long')
-        if len(v) > 30:
-            raise ValueError('Username cannot be longer than 30 characters')
-        if not v.replace('_', '').replace('-', '').isalnum():
-            raise ValueError('Username can only contain letters, numbers, underscores, and hyphens')
-        return v.strip()
-
-# Define a Pydantic model for application creation data
-class ApplicationCreateData(BaseModel):
-    name: str
-    description: str = ""
-    
-    # Add validation for application name
-    @validator('name')
-    def validate_name(cls, v):
-        if not v or not v.strip():
-            raise ValueError('Application name cannot be empty')
-        if len(v) < 3:
-            raise ValueError('Application name must be at least 3 characters long')
-        if len(v) > 50:
-            raise ValueError('Application name cannot be longer than 50 characters')
-        return v.strip()
+# ─── Register ─────────────────────────────────────────────────
 
 @app.post("/register")
-async def register_user(
-    registration_data: RegistrationData,
-    session: Session = Depends(get_db)
-):
-    # Check if user already exists
-    existing_user = session.query(User).filter(User.id == registration_data.clerk_user_id).first()
+async def register_user(data: CreateUserModel):
+    # Check if user already exists with this clerk_id
+    existing_user = await db.users.find_one({"clerk_id": data.clerk_id})
     if existing_user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="User already registered"
         )
 
-    # Check if username is available
-    username_exists = session.query(User).filter(User.username == registration_data.username).first()
+    # Check if username is taken
+    username_exists = await db.users.find_one({"username": data.username})
     if username_exists:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -111,119 +83,269 @@ async def register_user(
         )
 
     # Create new user
-    new_user = User(id=registration_data.clerk_user_id, username=registration_data.username)
-    session.add(new_user)
-    session.commit()
-    session.refresh(new_user)
+    new_user = {
+        "clerk_id": data.clerk_id,
+        "username": data.username,
+        "created_at": datetime.now(timezone.utc)
+    }
+
+    await db.users.insert_one(new_user)
 
     return {
-        "message": "User registered successfully",
-        "user": {
-            "id": new_user.id,
-            "username": new_user.username,
-            "created_at": new_user.created_at.isoformat()
-        }
+        "status": "success",
+        "message": "User registered successfully"
     }
+
+
+# ─── Protected ────────────────────────────────────────────────
 
 @app.get("/protected")
-async def protected(user: User = Depends(get_current_user)):
+async def protected(current_user = Depends(get_current_user)):
     return {
-        "message": "Authenticated successfully",
-        "user_id": user.id,
-        "username": user.username
+        "status": "success",
+        "message": "Authenticated successfully"
     }
+
+
+# ─── Applications ─────────────────────────────────────────────
 
 @app.post("/applications")
 async def create_application(
-    application_data: ApplicationCreateData,
-    user: User = Depends(get_current_user),
-    session: Session = Depends(get_db)
+    data: CreateApplicationModel,
+    current_user = Depends(get_current_user)
 ):
-    # Generate application ID by hashing application name and current datetime
-    current_time = datetime.datetime.now()
-    app_id_string = f"{application_data.name}_{current_time.isoformat()}"
+    # Generate app ID by hashing name + datetime (same as your old code)
+    current_time = datetime.now(timezone.utc)
+    app_id_string = f"{data.name}_{current_time.isoformat()}"
     app_id = hashlib.sha256(app_id_string.encode()).hexdigest()
-    
-    # Create new application
-    new_application = Application(
-        id=app_id,
-        name=application_data.name,
-        description=application_data.description,
-        user_id=user.id,
-        created_at=current_time,
-        updated_at=current_time
-    )
-    
-    session.add(new_application)
-    session.commit()
-    session.refresh(new_application)
-    
-    # Convert datetime fields properly
-    updated_at_value = None
-    if new_application.updated_at is not None:
-        updated_at_value = new_application.updated_at.isoformat()
-    
-    return {
-        "message": "Application created successfully",
-        "application": {
-            "id": new_application.id,
-            "name": new_application.name,
-            "description": new_application.description,
-            "user_id": new_application.user_id,
-            "created_at": new_application.created_at.isoformat(),
-            "updated_at": updated_at_value
-        }
+
+    new_application = {
+        "_id": app_id,
+        "name": data.name,
+        "description": data.description,
+        "clerk_id": current_user["clerk_id"],   # link to user
+        "created_at": current_time,
+        "updated_at": None
     }
+
+    await db.applications.insert_one(new_application)
+
+    return {
+        "status": "success",
+        "message": "Application created successfully",
+    }
+
+
+@app.get("/applications")
+async def get_applications(current_user = Depends(get_current_user)):
+    clerk_id = current_user["clerk_id"]
+
+    # Get all applications for this user
+    pipeline = [
+        # Step 1 - match only this user's applications
+        {"$match": {"clerk_id": clerk_id}},
+
+        # Step 2 - join flows and count them
+        {
+            "$lookup": {
+                "from": "flows",
+                "localField": "_id",
+                "foreignField": "application_id",
+                "as": "flows"
+            }
+        },
+
+        # Step 3 - add a workflow count field
+        {
+            "$addFields": {
+                "_count": {"workflows": {"$size": "$flows"}}
+            }
+        },
+
+        # Step 4 - remove the full flows array (we only need the count here)
+        {
+            "$project": {"flows": 0}
+        }
+    ]
+
+    applications = await db.applications.aggregate(pipeline).to_list(100)
+
+    for app in applications:
+        app["id"] = str(app["_id"])
+        del app["_id"]
+        if app.get("created_at"):
+            app["created_at"] = app["created_at"].isoformat()
+        if app.get("updated_at"):
+            app["updated_at"] = app["updated_at"].isoformat()
+
+    return {"status":"success","applications": applications}
+
 
 @app.delete("/applications/{application_id}")
 async def delete_application(
     application_id: str,
-    current_user: User = Depends(get_current_user),
-    session: Session = Depends(get_db)
+    current_user = Depends(get_current_user)
 ):
-    # Find the application by ID
-    application = session.query(Application).filter(Application.id == application_id).first()
-    
+    # Find the application
+    application = await db.applications.find_one({"_id": application_id})
+
+    if not application:
+        raise HTTPException(status_code=404, detail="Application not found")
+
+    # Check ownership
+    if application["clerk_id"] != current_user["clerk_id"]:
+        raise HTTPException(status_code=403, detail="Not authorized to delete this application")
+
+    await db.applications.delete_one({"_id": application_id})
+
+    return {"status":"success","message": "Application deleted successfully"}
+
+
+# ─── Flows ────────────────────────────────────────────────────
+
+@app.get("/applications/{application_id}/flows")
+async def get_application_flows(
+    application_id: str,
+    current_user = Depends(get_current_user)
+):
+    # Verify the application belongs to this user
+    application = await db.applications.find_one({"_id": application_id})
+    if not application:
+        raise HTTPException(status_code=404, detail="Application not found")
+    if application["clerk_id"] != current_user["clerk_id"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    # Get all flows for this application
+    flows = await db.flows.find({"application_id": application_id}).to_list(100)
+    for flow in flows:
+        flow["_id"] = str(flow["_id"])
+        if flow.get("created_at"):
+            flow["created_at"] = flow["created_at"].isoformat()
+        if flow.get("updated_at"):
+            flow["updated_at"] = flow["updated_at"].isoformat()
+
+    return {"status":"success","flows": flows}
+
+@app.post("/applications/{application_id}/flows")
+async def create_flow(
+    application_id: str,
+    data: CreateFlowModel,
+    current_user = Depends(get_current_user)
+):
+    # Check if application exists
+    application = await db.applications.find_one({"_id": application_id})
     if not application:
         raise HTTPException(status_code=404, detail="Application not found")
     
-    # Check if the application belongs to the current user
-    if application.user_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Not authorized to delete this application")
-    
-    # Delete the application
-    session.delete(application)
-    session.commit()
-    
-    return {"message": "Application deleted successfully"}
+    # Check if application belongs to current user
+    if application["clerk_id"] != current_user["clerk_id"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
 
-@app.get("/applications")
-async def get_applications(
-    current_user: User = Depends(get_current_user),
-    session: Session = Depends(get_db)
+    # Create flow
+    new_flow = {
+        "name": data.name,
+        "description": data.description,
+        "flow": data.flow,
+        "application_id": application_id,
+        "created_at": datetime.now(timezone.utc),
+        "updated_at": None
+    }
+
+    result = await db.flows.insert_one(new_flow)
+
+    return {
+        "status":"success",
+        "message": "Flow created successfully",
+    }
+
+@app.delete("/applications/{application_id}/flows/{flow_id}")
+async def delete_flow(
+    application_id: str,           
+    flow_id: str,
+    current_user = Depends(get_current_user)
 ):
-    # Import the count function
-    from sqlalchemy import func
-    # Get all applications for the current user with workflow counts
-    applications = session.query(Application, func.count(Flow.id)).outerjoin(Flow, Flow.application_id == Application.id).filter(Application.user_id == current_user.id).group_by(Application.id).all()
+    # Check if application exists and belongs to user
+    application = await db.applications.find_one({"_id": application_id})
+    if not application:
+        raise HTTPException(status_code=404, detail="Application not found")
+    if application["clerk_id"] != current_user["clerk_id"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    # Check if flow exists
+    flow = await db.flows.find_one({"_id": ObjectId(flow_id)})  
+    if not flow:
+        raise HTTPException(status_code=404, detail="Flow not found")
+
+    await db.flows.delete_one({"_id": ObjectId(flow_id)})       
+    return {"status":"success","message": "Flow deleted successfully"}
+
+# ─── Update Application ───────────────────────────────────────
+
+@app.put("/applications/{application_id}")
+async def update_application(
+    application_id: str,
+    data: UpdateApplicationModel,
+    current_user = Depends(get_current_user)
+):
+    # Check if application exists
+    application = await db.applications.find_one({"_id": application_id})
+    if not application:
+        raise HTTPException(status_code=404, detail="Application not found")
+
+    # Check ownership
+    if application["clerk_id"] != current_user["clerk_id"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    # Only update fields that are provided
+    update_data = {k: v for k, v in data.dict().items() if v is not None}
+    update_data["updated_at"] = datetime.now(timezone.utc)
+
+    await db.applications.update_one(
+        {"_id": application_id},
+        {"$set": update_data}
+    )
+
+    return {"status":"success","message": "Application updated successfully"}
+
+
+# ─── Update Flow ──────────────────────────────────────────────
+
+@app.put("/applications/{application_id}/flows/{flow_id}")
+async def update_flow(
+    application_id: str,
+    flow_id: str,
+    data: UpdateFlowModel,
+    current_user = Depends(get_current_user)
+):
+    # Check if application exists and belongs to user
+    application = await db.applications.find_one({"_id": application_id})
+    if not application:
+        raise HTTPException(status_code=404, detail="Application not found")
+    if application["clerk_id"] != current_user["clerk_id"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    # Check if flow exists
+    flow = await db.flows.find_one({"_id": ObjectId(flow_id), "application_id": application_id})
+    if not flow:
+        raise HTTPException(status_code=404, detail="Flow not found")
+
+    # Only update fields that are provided
+    update_data = {k: v for k, v in data.dict().items() if v is not None}
+    update_data["updated_at"] = datetime.now(timezone.utc)
+
+    await db.flows.update_one(
+        {"_id": ObjectId(flow_id)},
+        {"$set": update_data}
+    )
+
+    return {"status":"success","message": "Flow updated successfully"}
     
-    # Convert to dictionary format with workflow counts
-    apps_list = []
-    for app, workflow_count in applications:
-        updated_at_value = None
-        if app.updated_at is not None:
-            updated_at_value = app.updated_at.isoformat()
-        
-        apps_list.append({
-            "id": app.id,
-            "name": app.name,
-            "description": app.description,
-            "user_id": app.user_id,
-            "created_at": app.created_at.isoformat(),
-            "updated_at": updated_at_value,
-            "is_deleted": False,  # Assuming applications are not soft-deleted in this model
-            "deleted_at": None,
-            "_count": {"workflows": workflow_count}
-        })
-    
-    return {"applications": apps_list}
+@app.post("/tools/agent")
+def agent(data: dict):
+    prompt = data.get("prompt")
+    name = data.get("name")
+    input = data.get("input")
+    temp = data.get("temperature", 1)
+    reasoning = data.get("reasoning", False)
+
+    return agents.agent(prompt, name, temp, input, reasoning)

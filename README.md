@@ -19,8 +19,11 @@ The following environment variables need to be set in your `.env` file:
 
 - `CLERK_SECRET_KEY` - Clerk secret key for backend authentication
 - `CLERK_API_URL` - Clerk API URL (defaults to https://api.clerk.dev/v1)
-- `DATABASE_URL` - PostgreSQL database connection string
+- `DATABASE_URL` - Mongo database connection string
 - `AUTHORIZED_ORIGINS` - Comma-separated list of allowed origins for CORS (e.g., http://localhost:3000)
+- `AGENT_BASE_URL` - LLM endpoint.
+- `AGENT_KEY` - LLM API Key
+- `AGENT_MODLES` - LLM Model names (multiple seperated by ',')
 
 ### Example .env File
 
@@ -33,6 +36,11 @@ NEXT_PUBLIC_API_URL=http://localhost:8000
 CLERK_SECRET_KEY=sk_test_...
 DATABASE_URL=postgresql://username:password@localhost:5432/database_name
 AUTHORIZED_ORIGINS=http://localhost:3000
+
+# Agent secret
+AGENT_BASE_URL=https:....
+AGENT_KEY=nvapi-********JF
+AGENT_MODLES=nvidia/nemotron-3-super-120b-a12b
 ```
 
 ## Project Structure
@@ -45,6 +53,7 @@ AUTHORIZED_ORIGINS=http://localhost:3000
 │   ├── config/            # Configuration files
 │   ├── database/          # Database connection and models
 │   └── models/            # Database models
+|   └── tools/             # Includes the tools like Agent, MCP etc
 ├── src/                   # Frontend (Next.js)
 │   ├── app/               # Application pages and components
 │   ├── components/        # Reusable UI components
@@ -77,6 +86,12 @@ AUTHORIZED_ORIGINS=http://localhost:3000
 - `POST /applications` - Create a new application/workspace
 - `GET /applications` - Retrieve all applications for a user
 - `DELETE /applications/{id}` - Delete an application
+- `GET /applications/{application_id}/flows` - Retrieve all flows of that  applications for a user
+- `POST /applications/{application_id}/flows` - Create a new flows in that application/workspace
+- `DELETE /applications/{application_id}/flows/{flow_id}` - Delete an Flow
+- `PUT /applications/{application_id}` - Update the apllication info
+- `PUT /applications/{application_id}/flows/{flow_id}` - Update the Flow info
+- `POST /tools/agent` - Run the LLM.
 
 ## Tech Stack
 
@@ -88,8 +103,8 @@ AUTHORIZED_ORIGINS=http://localhost:3000
 
 ### Backend
 - FastAPI for the REST API
-- SQLAlchemy for database operations
-- PostgreSQL for data storage
+- motor for database operations
+- Mongo for data storage
 
 ## Development
 
@@ -116,6 +131,3 @@ The application can be deployed to any cloud platform that supports Docker conta
 3. Make your changes
 4. Submit a pull request
 
-## License
-
-This project is licensed under the MIT License.

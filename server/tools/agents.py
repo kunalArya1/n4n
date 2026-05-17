@@ -13,10 +13,10 @@ def agent(prompt: str, name: str, temp: float, input: str, reasoning: bool) -> o
         )
 
     except:
-        return {"error": "Incorrect credentianls"}
+        return {"status":"error","message": "Incorrect credentianls"}
 
     if not name in MODLE_LIST:
-        return {"error": "Model Not Found"}
+        return {"status":"error","message": "Model Not Found"}
     
     prompt = prompt + "\n" + input
     completion = client.chat.completions.create(
@@ -40,4 +40,5 @@ def agent(prompt: str, name: str, temp: float, input: str, reasoning: bool) -> o
         if chunk.choices[0].delta.content is not None:
             info = chunk.choices[0].delta.content + "\n"
             content += info
-    return {"content": f"{content}"}
+    return {"status":"success",
+            "content": f"{content}"}

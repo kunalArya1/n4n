@@ -14,6 +14,7 @@ from models.application import ApplicationModel, CreateApplicationModel, UpdateA
 from models.flows import FlowModel, CreateFlowModel, UpdateFlowModel
 from config.config import AUTHORIZED_ORIGINS
 from database.database import db, init_db
+from tools import agents
 
 # ─── Health ──────b  # motor db instance
 
@@ -61,12 +62,6 @@ async def cors_preflight_handler(request: Request, call_next):
 async def health():
     return {"status": "API running"}
 
-    # returns a fake user object bypassing clerk
-    return {
-        "clerk_id": "user_test001",
-        "username": "likith",
-        "email": "likith@test.com"
-    }
 # ─── Register ─────────────────────────────────────────────────
 
 @app.post("/register")
@@ -97,12 +92,8 @@ async def register_user(data: CreateUserModel):
     await db.users.insert_one(new_user)
 
     return {
-        "message": "User registered successfully",
-        "user": {
-            "clerk_id": new_user["clerk_id"],
-            "username": new_user["username"],
-            "created_at": new_user["created_at"].isoformat()
-        }
+        "status": "success",
+        "message": "User registered successfully"
     }
 
 
@@ -111,9 +102,8 @@ async def register_user(data: CreateUserModel):
 @app.get("/protected")
 async def protected(current_user = Depends(get_current_user)):
     return {
-        "message": "Authenticated successfully",
-        "clerk_id": current_user["clerk_id"],
-        "username": current_user["username"]
+        "status": "success",
+        "message": "Authenticated successfully"
     }
 
 
@@ -141,15 +131,8 @@ async def create_application(
     await db.applications.insert_one(new_application)
 
     return {
+        "status": "success",
         "message": "Application created successfully",
-        "application": {
-            "id": app_id,
-            "name": new_application["name"],
-            "description": new_application["description"],
-            "clerk_id": new_application["clerk_id"],
-            "created_at": new_application["created_at"].isoformat(),
-            "updated_at": None
-        }
     }
 
 
@@ -195,7 +178,7 @@ async def get_applications(current_user = Depends(get_current_user)):
         if app.get("updated_at"):
             app["updated_at"] = app["updated_at"].isoformat()
 
-    return {"applications": applications}
+    return {"status":"success","applications": applications}
 
 
 @app.delete("/applications/{application_id}")
@@ -215,7 +198,7 @@ async def delete_application(
 
     await db.applications.delete_one({"_id": application_id})
 
-    return {"message": "Application deleted successfully"}
+    return {"status":"success","message": "Application deleted successfully"}
 
 
 # ─── Flows ────────────────────────────────────────────────────
@@ -241,7 +224,7 @@ async def get_application_flows(
         if flow.get("updated_at"):
             flow["updated_at"] = flow["updated_at"].isoformat()
 
-    return {"flows": flows}
+    return {"status":"success","flows": flows}
 
 @app.post("/applications/{application_id}/flows")
 async def create_flow(
@@ -271,14 +254,8 @@ async def create_flow(
     result = await db.flows.insert_one(new_flow)
 
     return {
+        "status":"success",
         "message": "Flow created successfully",
-        "flow": {
-            "id": str(result.inserted_id),
-            "name": new_flow["name"],
-            "description": new_flow["description"],
-            "application_id": application_id,
-            "created_at": new_flow["created_at"].isoformat()
-        }
     }
 
 @app.delete("/applications/{application_id}/flows/{flow_id}")
@@ -300,7 +277,7 @@ async def delete_flow(
         raise HTTPException(status_code=404, detail="Flow not found")
 
     await db.flows.delete_one({"_id": ObjectId(flow_id)})       
-    return {"message": "Flow deleted successfully"}
+    return {"status":"success","message": "Flow deleted successfully"}
 
 # ─── Update Application ───────────────────────────────────────
 
@@ -328,7 +305,7 @@ async def update_application(
         {"$set": update_data}
     )
 
-    return {"message": "Application updated successfully"}
+    return {"status":"success","message": "Application updated successfully"}
 
 
 # ─── Update Flow ──────────────────────────────────────────────
@@ -361,7 +338,14 @@ async def update_flow(
         {"$set": update_data}
     )
 
-    return {"message": "Flow updated successfully"}
+    return {"status":"success","message": "Flow updated successfully"}
     
+@app.post("/tools/agent")
+def agent(data: dict):
+    prompt = data.get("prompt")
+    name = data.get("name")
+    input = data.get("input")
+    temp = data.get("temperature", 1)
+    reasoning = data.get("reasoning", False)
 
-    
+    return agents.agent(prompt, name, temp, input, reasoning)

@@ -25,6 +25,14 @@ The following environment variables need to be set in your `.env` file:
 - `AGENT_KEY` - LLM API Key
 - `AGENT_MODLES` - LLM Model names (multiple seperated by ',')
 
+### Swagger
+
+To test or known how the backend works you can refer the fastapi swgger
+
+```bash
+http://localhost:8000/docs
+```
+
 ### Example .env File
 
 ```env
@@ -34,13 +42,10 @@ NEXT_PUBLIC_API_URL=http://localhost:8000
 
 # Backend
 CLERK_SECRET_KEY=sk_test_...
-DATABASE_URL=postgresql://username:password@localhost:5432/database_name
+DATABASE_URL=mongodb://USERNAME:PASSWORD@HOST:PORT (or for testing/in local you can use mongodb://localhost:27017)
 AUTHORIZED_ORIGINS=http://localhost:3000
 
-# Agent secret
-AGENT_BASE_URL=https:....
-AGENT_KEY=nvapi-********JF
-AGENT_MODLES=nvidia/nemotron-3-super-120b-a12b
+ENCRYPTION_KEY=Ben*****************3LeI=
 ```
 
 ## Project Structure
@@ -52,8 +57,9 @@ AGENT_MODLES=nvidia/nemotron-3-super-120b-a12b
 │   ├── auth/               # Authentication related code
 │   ├── config/            # Configuration files
 │   ├── database/          # Database connection and models
-│   └── models/            # Database models
-|   └── tools/             # Includes the tools like Agent, MCP etc
+│   ├── models/            # Database models
+|   ├── tools/             # Includes the tools like Agent, MCP etc
+|   └── routes/            # containes routes
 ├── src/                   # Frontend (Next.js)
 │   ├── app/               # Application pages and components
 │   ├── components/        # Reusable UI components
@@ -89,9 +95,15 @@ AGENT_MODLES=nvidia/nemotron-3-super-120b-a12b
 - `GET /applications/{application_id}/flows` - Retrieve all flows of that  applications for a user
 - `POST /applications/{application_id}/flows` - Create a new flows in that application/workspace
 - `DELETE /applications/{application_id}/flows/{flow_id}` - Delete an Flow
-- `PUT /applications/{application_id}` - Update the apllication info
+- `PUT /applications/{application_id}` - Update the application info
 - `PUT /applications/{application_id}/flows/{flow_id}` - Update the Flow info
 - `POST /tools/agent` - Run the LLM.
+- `POST /tools/CustomAgent` - registers the custom LLM model
+- `GET /tools/CustomAgent` - gets all the registered custom LLM models for that user
+- `PUT /tools/CustomAgent/{id}` - updated the Custom LLM
+- `DELETE /tools/CustomAgent/{id}` - Delets the custom LLM
+
+***for more info go to the fastapi swagger***
 
 ## Tech Stack
 

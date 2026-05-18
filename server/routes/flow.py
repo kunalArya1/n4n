@@ -4,7 +4,7 @@ from bson import ObjectId
 
 from models.flows import CreateFlowModel, UpdateFlowModel
 from database.database import db
-from auth.authenticate import get_current_user
+from auth.authenticate import get_current_user_dummy as get_current_user
 
 router = APIRouter(prefix="/applications", tags=["Flows"])
 
@@ -84,7 +84,7 @@ async def delete_flow(
     await db.flows.delete_one({"_id": ObjectId(flow_id)})       
     return {"status":"success","message": "Flow deleted successfully"}
 
-@router.put("/applications/{application_id}/flows/{flow_id}")
+@router.put("/{application_id}/flows/{flow_id}")
 async def update_flow(
     application_id: str,
     flow_id: str,

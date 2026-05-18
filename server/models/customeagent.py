@@ -23,7 +23,7 @@ class CreateCustomAgent(BaseModel):
     endpoint: str
 
 class UpdateCustomAgent(BaseModel):
-    name: str
-    api_key: str
-    endpoint: str
+    name: Optional[str] = None
+    api_key: Optional[str] = None
+    endpoint: Optional[str] = None
     updated_at: datetime = Field(default_factory = lambda: datetime.now(timezone.utc))

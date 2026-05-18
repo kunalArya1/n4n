@@ -5,7 +5,7 @@ from bson import ObjectId
 from helper import encoder
 from database.database import db
 from models.customeagent import CreateCustomAgent, UpdateCustomAgent
-from auth.authenticate import get_current_user
+from auth.authenticate import get_current_user_dummy as get_current_user
 from tools import agents
 
 router = APIRouter(prefix="/tools", tags=["Tools"])
@@ -18,7 +18,8 @@ async def agent(data: dict):
     temp = data.get("temperature", 1)
     reasoning = data.get("reasoning", False)
 
-    return agents.agent(prompt, name, temp, input, reasoning)
+    result = await agents.agent(prompt, name, temp, input, reasoning)
+    return result
 
 @router.get("/agent")
 async def get_agent():
@@ -33,7 +34,7 @@ async def get_agent():
 async def Create_CustomeAgent(data: CreateCustomAgent,
  current_user = Depends(get_current_user)
  ):
-    encoded_api_key = encoder.encrypt(data.api_key)
+    encoded_api_key = encoder.encrypt_value(data.api_key)
     current_time = datetime.now(timezone.utc)
     new_agent = {
         "name": data.name,
@@ -53,23 +54,30 @@ async def Create_CustomeAgent(data: CreateCustomAgent,
 async def get_CustomAgent(
     current_user = Depends(get_current_user)
 ):
-    agents = await db.custom_agents.find(
+
+
+    agents = await db.CustomAgent.find(
         {"user_id": current_user["clerk_id"]}
     ).to_list(100)
+
 
     for agent in agents:
         agent["_id"] = str(agent["_id"])
         agent.pop("api_key", None)
-    return {"status":"success","agents": agents}
 
-@router.update("/CustomAgent/{_id}")
+    return {
+        "status": "success",
+        "agents": agents
+    }
+
+@router.put("/CustomAgent/{_id}")
 async def update_CustomAgent(
     data: UpdateCustomAgent,
     _id: str
 ):
     
-    CustomAgent = await db.CustomAgent.find_one({"_id": _id})
-    if not CustomAgent:
+    CustomAgents = await db.CustomAgent.find_one({"_id": ObjectId(_id)})
+    if not CustomAgents:
         raise HTTPException(status_code=404, detail="Agent not found")
 
     update_data = {k: v for k, v in data.dict().items() if v is not None}
@@ -89,7 +97,7 @@ async def update_CustomAgent(
 async def Delete_CustomAgent(
     _id: str
 ):
-    CustomAgent = await db.CustomAgent.find_one({"_id": _id})
+    CustomAgent = await db.CustomAgent.find_one({"_id": ObjectId(_id)})
     if not CustomAgent:
         raise HTTPException(status_code=404, detail="Agent not found")
     await db.CustomAgent.delete_one({"_id": ObjectId(_id)})       

@@ -23,4 +23,4 @@ async def init_db():
         await db.create_collection("CustomAgent")
     
     if "Agents" not in existing_collections:
-        await.db.create_collection("Agents")
+        await db.create_collection("Agents")

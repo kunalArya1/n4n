@@ -5,7 +5,7 @@ from bson import ObjectId
 from helper import encoder
 from database.database import db
 from models.customeagent import CreateCustomAgent, UpdateCustomAgent
-from auth.authenticate import get_current_user_dummy as get_current_user
+from auth.authenticate import get_current_user
 from tools import agents
 
 router = APIRouter(prefix="/tools", tags=["Tools"])

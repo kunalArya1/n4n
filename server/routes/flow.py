@@ -4,7 +4,7 @@ from bson import ObjectId
 
 from models.flows import CreateFlowModel, UpdateFlowModel
 from database.database import db
-from auth.authenticate import get_current_user_dummy as get_current_user
+from auth.authenticate import get_current_user
 
 router = APIRouter(prefix="/applications", tags=["Flows"])
 

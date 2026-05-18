@@ -65,14 +65,3 @@ async def get_current_user(request: Request):
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=f"Authentication failed: {str(e)}",
         )
-    
-
-async def get_current_user_dummy(request: Request):
-    # read clerk_id from a custom test header
-    clerk_id = request.headers.get("X-Test-User", "user_test001")
-    
-    user = await db.users.find_one({"clerk_id": clerk_id})
-    if not user:
-        raise HTTPException(status_code=404, detail="Test user not found")
-    
-    return user

@@ -4,7 +4,7 @@ from bson import ObjectId
 import hashlib
 
 from models.application import CreateApplicationModel, UpdateApplicationModel
-from auth.authenticate import get_current_user_dummy as get_current_user
+from auth.authenticate import get_current_user
 from database.database import db
 
 router = APIRouter(prefix="/applications", tags=["Applications"])

@@ -5,27 +5,27 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { HiOutlineFolder, HiOutlineTrash } from "react-icons/hi2";
+import { HiOutlineBolt, HiOutlineTrash } from "react-icons/hi2";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { MdDeleteForever, MdRestoreFromTrash } from "react-icons/md";
-import { Workspace } from "@/types";
+import { Workflow } from "@/types";
 
-interface TrashGridProps {
-  workspaces: Workspace[];
+interface WorkflowTrashGridProps {
+  workflows: Workflow[];
   onRestored: (id: string) => void;
   onPermanentDeleted: (id: string) => void;
   selectedIds: Set<string>;
   onSelectionChange: (ids: Set<string>) => void;
 }
 
-export default function TrashGrid({ workspaces, onRestored, onPermanentDeleted, selectedIds, onSelectionChange }: TrashGridProps) {
+export default function WorkflowTrashGrid({ workflows, onRestored, onPermanentDeleted, selectedIds, onSelectionChange }: WorkflowTrashGridProps) {
   const [permanentDeleteOpen, setPermanentDeleteOpen] = useState(false);
-  const [selectedWs, setSelectedWs] = useState<Workspace | null>(null);
+  const [selectedWf, setSelectedWf] = useState<Workflow | null>(null);
   const [batchDeleteOpen, setBatchDeleteOpen] = useState(false);
 
   function handlePermanentDelete() {
-    if (!selectedWs) return;
-    onPermanentDeleted(selectedWs.id);
+    if (!selectedWf) return;
+    onPermanentDeleted(selectedWf.id);
     setPermanentDeleteOpen(false);
   }
 
@@ -45,14 +45,14 @@ export default function TrashGrid({ workspaces, onRestored, onPermanentDeleted, 
 
   const hasSelection = selectedIds.size > 0;
 
-  if (workspaces.length === 0) {
+  if (workflows.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
         <div className="bg-muted mb-4 rounded p-4">
           <HiOutlineTrash className="text-muted-foreground h-8 w-8" />
         </div>
         <p className="text-muted-foreground text-sm">Trash is empty.</p>
-        <p className="text-muted-foreground text-sm">Deleted items will appear here.</p>
+        <p className="text-muted-foreground text-sm">Deleted workflows will appear here.</p>
       </div>
     );
   }
@@ -90,11 +90,11 @@ export default function TrashGrid({ workspaces, onRestored, onPermanentDeleted, 
       )}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {workspaces.map((ws) => {
-          const isSelected = selectedIds.has(ws.id);
+        {workflows.map((wf) => {
+          const isSelected = selectedIds.has(wf.id);
           return (
             <Card
-              key={ws.id}
+              key={wf.id}
               className={`group relative border-dashed opacity-75 transition-all hover:opacity-100 ${isSelected ? "border-primary/50 bg-primary/5 ring-primary opacity-100! ring-1" : ""}`}
             >
               <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
@@ -103,20 +103,20 @@ export default function TrashGrid({ workspaces, onRestored, onPermanentDeleted, 
                     className={`shrink-0 cursor-pointer rounded p-2 transition-colors ${
                       isSelected ? "bg-primary text-primary-foreground" : "bg-muted hover:bg-muted/80"
                     }`}
-                    onClick={(e) => toggleSelect(ws.id, e)}
+                    onClick={(e) => toggleSelect(wf.id, e)}
                   >
                     {isSelected ? (
                       <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                       </svg>
                     ) : (
-                      <HiOutlineFolder className="text-muted-foreground h-5 w-5" />
+                      <HiOutlineBolt className="text-muted-foreground h-5 w-5" />
                     )}
                   </div>
                   <div className="min-w-0">
-                    <CardTitle className="text-muted-foreground truncate text-sm leading-tight font-semibold">{ws.name}</CardTitle>
+                    <CardTitle className="text-muted-foreground truncate text-sm leading-tight font-semibold">{wf.name}</CardTitle>
                     <CardDescription className="mt-0.5 text-xs">
-                      {ws._count.workflows} workflow{ws._count.workflows !== 1 ? "s" : ""}
+                      {wf._count.nodes} node{wf._count.nodes !== 1 ? "s" : ""}
                     </CardDescription>
                   </div>
                 </div>
@@ -127,26 +127,24 @@ export default function TrashGrid({ workspaces, onRestored, onPermanentDeleted, 
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => onRestored(ws.id)}>
-                      <MdRestoreFromTrash className="mr-2 h-4 w-4 text-emerald-500" />
-                      Restore
+                    <DropdownMenuItem onClick={() => onRestored(wf.id)}>
+                      <MdRestoreFromTrash className="mr-2 h-4 w-4 text-emerald-500" /> Restore
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       className="text-destructive focus:text-destructive"
                       onClick={() => {
-                        setSelectedWs(ws);
+                        setSelectedWf(wf);
                         setPermanentDeleteOpen(true);
                       }}
                     >
-                      <MdDeleteForever className="mr-2 h-4 w-4" />
-                      Delete Forever
+                      <MdDeleteForever className="mr-2 h-4 w-4" /> Delete Forever
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </CardHeader>
               <CardContent className="pt-0">
                 <p className="text-muted-foreground truncate text-[11px]" suppressHydrationWarning>
-                  Deleted {ws.deletedAt ? new Date(ws.deletedAt).toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" }) : ""}
+                  Deleted {wf.deletedAt ? new Date(wf.deletedAt).toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" }) : ""}
                 </p>
               </CardContent>
             </Card>
@@ -154,13 +152,14 @@ export default function TrashGrid({ workspaces, onRestored, onPermanentDeleted, 
         })}
       </div>
 
+      {/* Single permanent delete confirmation */}
       <Dialog open={permanentDeleteOpen} onOpenChange={setPermanentDeleteOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Delete Permanently</DialogTitle>
           </DialogHeader>
           <p className="text-muted-foreground text-sm">
-            Are you sure you want to permanently delete <strong>{selectedWs?.name}</strong>? This action cannot be undone.
+            Are you sure you want to permanently delete <strong>{selectedWf?.name}</strong>? This action cannot be undone.
           </p>
           <DialogFooter>
             <Button variant="outline" onClick={() => setPermanentDeleteOpen(false)}>
@@ -173,17 +172,18 @@ export default function TrashGrid({ workspaces, onRestored, onPermanentDeleted, 
         </DialogContent>
       </Dialog>
 
+      {/* Batch permanent delete confirmation */}
       <Dialog open={batchDeleteOpen} onOpenChange={setBatchDeleteOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              Delete {selectedIds.size} Item{selectedIds.size !== 1 ? "s" : ""} Permanently
+              Delete {selectedIds.size} Workflow{selectedIds.size !== 1 ? "s" : ""} Permanently
             </DialogTitle>
           </DialogHeader>
           <p className="text-muted-foreground text-sm">
             Are you sure you want to permanently delete{" "}
             <strong>
-              {selectedIds.size} workspace{selectedIds.size !== 1 ? "s" : ""}
+              {selectedIds.size} workflow{selectedIds.size !== 1 ? "s" : ""}
             </strong>
             ? This action cannot be undone.
           </p>

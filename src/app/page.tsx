@@ -12,8 +12,7 @@ export default async function Home() {
       <header className="border-border/40 border-b backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
           <Link href="/" className="flex items-center gap-3">
-            <Image src="/logo.svg" alt="Logo" width={32} height={32} />
-            {/* <span className="text-lg font-semibold tracking-tight">n4n</span> */}
+            <Image src="/logo.svg" alt="Logo" width={26} height={26} />
           </Link>
           <SignedOut>
             <div className="flex items-center gap-3">

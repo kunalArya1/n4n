@@ -1,10 +1,17 @@
-from config import config
 from openai import OpenAI
 
-def agent(prompt: str, name: str, temp: float, input: str, reasoning: bool) -> object:
-    BASE_URL = config.AGENT_BASEURL
-    API_KEY = config.AGENT_KEY
-    MODLE_LIST = config.AGENT_MODEL
+from database.database import db
+from helper import encoder
+
+async def agent(prompt: str, name: str, temp: float, input: str, reasoning: bool) -> object:
+    agents_info = await db.Agents.find_one(
+    {"name": name}
+    )
+
+    BASE_URL = agents_info.get("endpoint")
+    API_KEY = encoder.decrypt_value(agents_info.get("api_key"))
+
+
 
     try:
         client = OpenAI(
@@ -14,9 +21,6 @@ def agent(prompt: str, name: str, temp: float, input: str, reasoning: bool) -> o
 
     except:
         return {"status":"error","message": "Incorrect credentianls"}
-
-    if not name in MODLE_LIST:
-        return {"status":"error","message": "Model Not Found"}
     
     prompt = prompt + "\n" + input
     completion = client.chat.completions.create(

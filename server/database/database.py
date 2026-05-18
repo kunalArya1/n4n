@@ -18,3 +18,9 @@ async def init_db():
 
     if "flows" not in existing_collections:
         await db.create_collection("flows")
+
+    if "CustomAgent" not in existing_collections:
+        await db.create_collection("CustomAgent")
+    
+    if "Agents" not in existing_collections:
+        await db.create_collection("Agents")

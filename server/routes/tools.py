@@ -7,7 +7,7 @@ from helper import encoder
 from database.database import db
 from models.customeagent import CreateCustomAgent, UpdateCustomAgent
 from auth.authenticate import get_current_user
-from tools import agents
+from tools import agents, database_node
 from tools.codeexecutor import codeexecutor as codex
 
 router = APIRouter(prefix="/tools", tags=["Tools"])
@@ -137,3 +137,22 @@ async def get_code_output(job_id: str):
         return {"job_id": job_id, "status": "failed", "error": str(task.result)}
 
     return {"job_id": job_id, "status": task.state.lower()}
+
+@router.post("/database")
+async def database_node(
+    data: dict
+):
+    db_type = data.get("db_type")
+    host = data.get("host")
+    port = data.get("port")
+    database = data.get("database")
+    username = data.get("username")
+    password = data.get("password")
+    query = data.get("query")
+
+    if db_type == "postgres":
+        return await database_node.execute_postgres(host, port, database, username, password, query)
+    elif db_type == "mongodb":
+        return await database_node.execute_mongodb(host, port, database, username, password, query)
+    else:
+        return {"success": False, "error": f"Database type '{db_type}' not supported"}

@@ -13,7 +13,6 @@ async def agent(prompt: str, name: str, temp: float, input: str, reasoning: bool
     if name == "OpenAI GPT-oss-120b":
         name = "default"
 
-
     try:
         client = OpenAI(
         base_url = f"{BASE_URL}",

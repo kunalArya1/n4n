@@ -21,9 +21,8 @@ The following environment variables need to be set in your `.env` file:
 - `CLERK_API_URL` - Clerk API URL (defaults to https://api.clerk.dev/v1)
 - `DATABASE_URL` - Mongo database connection string
 - `AUTHORIZED_ORIGINS` - Comma-separated list of allowed origins for CORS (e.g., http://localhost:3000)
-- `AGENT_BASE_URL` - LLM endpoint.
-- `AGENT_KEY` - LLM API Key
-- `AGENT_MODLES` - LLM Model names (multiple seperated by ',')
+- `ENCRYPTION_KEY` - use to encrypt the LLM API key before storing in the db (Should be Fernet compatible)
+- `REDIS_URL` - Redis connect
 
 ### Swagger
 
@@ -46,6 +45,7 @@ DATABASE_URL=mongodb://USERNAME:PASSWORD@HOST:PORT (or for testing/in local you 
 AUTHORIZED_ORIGINS=http://localhost:3000
 
 ENCRYPTION_KEY=Ben*****************3LeI=
+REDIS_URL = redis://redis:6379
 ```
 
 ## Project Structure
@@ -59,6 +59,7 @@ ENCRYPTION_KEY=Ben*****************3LeI=
 │   ├── database/          # Database connection and models
 │   ├── models/            # Database models
 |   ├── tools/             # Includes the tools like Agent, MCP etc
+│   │   └──codeexecutor/   # nested package indide the tools to code execution tool
 |   └── routes/            # containes routes
 ├── src/                   # Frontend (Next.js)
 │   ├── app/               # Application pages and components
@@ -66,6 +67,9 @@ ENCRYPTION_KEY=Ben*****************3LeI=
 │   ├── lib/               # Utility functions and API clients
 │   └── types/             # TypeScript type definitions
 ├── public/                # Static assets
+├── Dockerfile             # build docker image
+├──.dockerignore           # docker related file
+├──docker-compose.yaml     # composes docker image
 └── .env                   # Environment variables
 ```
 
@@ -102,6 +106,9 @@ ENCRYPTION_KEY=Ben*****************3LeI=
 - `GET /tools/CustomAgent` - gets all the registered custom LLM models for that user
 - `PUT /tools/CustomAgent/{id}` - updated the Custom LLM
 - `DELETE /tools/CustomAgent/{id}` - Delets the custom LLM
+- `POST /tools/codex` - runs the input code (supportes only selected languges)
+- `GET /tools/codex/{job_id}` - retive the output for the code
+- `POST /tools/database` - queries the postgres/mongo db and return the result
 
 ***for more info go to the fastapi swagger***
 
@@ -117,6 +124,8 @@ ENCRYPTION_KEY=Ben*****************3LeI=
 - FastAPI for the REST API
 - motor for database operations
 - Mongo for data storage
+- Redis
+- Celery
 
 ## Development
 

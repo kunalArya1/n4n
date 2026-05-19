@@ -1,7 +1,5 @@
 fastapi
 uvicorn[standard]
-sqlalchemy
-psycopg2-binary
 python-dotenv
 clerk-backend-api
 gunicorn
@@ -9,3 +7,7 @@ PyJWT
 pymongo
 motor
 openai
+celery
+redis
+docker
+asyncpg

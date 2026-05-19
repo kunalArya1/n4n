@@ -1,0 +1,104 @@
+{
+
+    "python": {
+        "image": "python:3.11-slim",
+        "filename": "code.py",
+        "run_cmd": "python"
+    },
+
+    "javascript": {
+        "image": "node:18-slim",
+        "filename": "code.js",
+        "run_cmd": "node"
+    },
+
+    "typescript": {
+        "image": "node:18-slim",
+        "filename": "code.ts",
+        "run_cmd": "npx ts-node"
+    },
+
+    "bash": {
+        "image": "bash:5.2",
+        "filename": "code.sh",
+        "run_cmd": "bash"
+    },
+
+    "c": {
+        "image": "gcc:13",
+        "filename": "code.c",
+        "run_cmd": "sh -c 'gcc /sandbox/code.c -o /sandbox/app && /sandbox/app'"
+    },
+
+    "cpp": {
+        "image": "gcc:13",
+        "filename": "code.cpp",
+        "run_cmd": "sh -c 'g++ /sandbox/code.cpp -o /sandbox/app && /sandbox/app'"
+    },
+
+    "java": {
+        "image": "openjdk:21-slim",
+        "filename": "Main.java",
+        "run_cmd": "sh -c 'javac /sandbox/Main.java && java -cp /sandbox Main'"
+    },
+
+    "go": {
+        "image": "golang:1.22",
+        "filename": "code.go",
+        "run_cmd": "go run"
+    },
+
+    "rust": {
+        "image": "rust:1.78",
+        "filename": "code.rs",
+        "run_cmd": "sh -c 'rustc /sandbox/code.rs -o /sandbox/app && /sandbox/app'"
+    },
+
+    "php": {
+        "image": "php:8.3-cli",
+        "filename": "code.php",
+        "run_cmd": "php"
+    },
+
+    "ruby": {
+        "image": "ruby:3.3",
+        "filename": "code.rb",
+        "run_cmd": "ruby"
+    },
+
+    "perl": {
+        "image": "perl:5.38",
+        "filename": "code.pl",
+        "run_cmd": "perl"
+    },
+
+    "r": {
+        "image": "r-base:latest",
+        "filename": "code.R",
+        "run_cmd": "Rscript"
+    },
+
+    "lua": {
+        "image": "lua:5.4",
+        "filename": "code.lua",
+        "run_cmd": "lua"
+    },
+
+    "swift": {
+        "image": "swift:5.10",
+        "filename": "code.swift",
+        "run_cmd": "swift"
+    },
+
+    "kotlin": {
+        "image": "gradle:8.7-jdk21",
+        "filename": "Main.kt",
+        "run_cmd": "sh -c 'kotlinc /sandbox/Main.kt -include-runtime -d /sandbox/app.jar && java -jar /sandbox/app.jar'"
+    },
+
+    "csharp": {
+        "image": "mcr.microsoft.com/dotnet/sdk:8.0",
+        "filename": "Program.cs",
+        "run_cmd": "sh -c 'cd /sandbox && dotnet new console --force && mv Program.cs Program.cs && dotnet run'"
+    }
+}

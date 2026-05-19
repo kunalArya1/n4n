@@ -1,5 +1,6 @@
 from os import getenv
 from dotenv import load_dotenv
+import json
 
 load_dotenv()
 
@@ -23,4 +24,9 @@ AUTHORIZED_ORIGINS = [
 
 AGENT_BASEURL = getenv("AGENT_BASE_URL")
 AGENT_KEY = getenv("AGENT_KEY")
-AGENT_MODEL = [M.strip() for M in getenv("AGENT_MODLES", "").split(",")]
+
+REDIS_URL = getenv("REDIS_URL")
+
+
+with open("lang_config.json", "r") as file:
+    LANG_CONFIG = json.load(file)

@@ -10,7 +10,8 @@ async def agent(prompt: str, name: str, temp: float, input: str, reasoning: bool
 
     BASE_URL = agents_info.get("endpoint")
     API_KEY = encoder.decrypt_value(agents_info.get("api_key"))
-
+    if name == "OpenAI GPT-oss-120b":
+        name = "default"
 
 
     try:

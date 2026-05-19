@@ -1,0 +1,71 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.so
+
+# Virtual environments
+venv/
+.env/
+.venv/
+
+# Environment files
+.env.local
+.env.production
+.env.development
+
+# Git
+.git/
+.gitignore
+
+# IDEs
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Pytest / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Node modules (if frontend exists)
+node_modules/
+
+# Docker
+docker-compose.yml
+
+# Mongo local data
+data/
+mongo_data/
+
+# Temporary files
+tmp/
+temp/
+
+# Cache
+.cache/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Media/uploads
+uploads/
+media/
+
+# SQLite
+*.db
+*.sqlite3
+
+src/

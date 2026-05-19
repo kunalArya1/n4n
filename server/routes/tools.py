@@ -1,12 +1,14 @@
 from fastapi import APIRouter, HTTPException, Depends
 from datetime import datetime, timezone
 from bson import ObjectId
+from celery.result import AsyncResult
 
 from helper import encoder
 from database.database import db
 from models.customeagent import CreateCustomAgent, UpdateCustomAgent
 from auth.authenticate import get_current_user
 from tools import agents
+from tools.codeexecutor import codeexecutor as codex
 
 router = APIRouter(prefix="/tools", tags=["Tools"])
 
@@ -102,3 +104,36 @@ async def Delete_CustomAgent(
         raise HTTPException(status_code=404, detail="Agent not found")
     await db.CustomAgent.delete_one({"_id": ObjectId(_id)})       
     return {"status":"success","message": "Agent deleted successfully"}   
+
+@router.post("/codex")
+async def execute_code(data: dict):
+    code = data.get("code")
+    lang = data.get("lang")
+    timeout = 10
+    if not code:
+        raise HTTPException(status_code=400, detail="Code is required")
+    if len(code) > 10000:
+        raise HTTPException(status_code=400, detail="Code too long")
+    if timeout > 30:
+        timeout = 30
+    task = codex.execute_code_task.delay(code, lang, timeout)
+    return {
+        "job_id": task.id,
+        "status": "queued",
+        "message": "Code submitted for execution"
+    }
+
+@router.get("/codex/{job_id}")
+async def get_code_output(job_id: str):
+    task = AsyncResult(job_id)
+
+    if task.state == "PENDING":
+        return {"job_id": job_id, "status": "pending"}
+    elif task.state == "STARTED":
+        return {"job_id": job_id, "status": "executing"}
+    elif task.state == "SUCCESS":
+        return {"job_id": job_id, "status": "completed", "result": task.result}
+    elif task.state == "FAILURE":
+        return {"job_id": job_id, "status": "failed", "error": str(task.result)}
+
+    return {"job_id": job_id, "status": task.state.lower()}
